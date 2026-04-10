@@ -1,0 +1,271 @@
+# Koin - Project Context (Full)
+
+This file contains the consolidated documentation for the Koin project, providing full technical and business context for LLMs.
+
+---
+
+## Table of Contents
+1. [Product Requirements (PRD)](#1-product-requirements-prd)
+2. [IRS Alignment & Advanced Features](#2-irs-alignment--advanced-features)
+3. [Database Schema](#3-database-schema)
+4. [API Endpoints](#4-api-endpoints)
+5. [Composables & State](#5-composables--state)
+6. [Mercury Integration](#6-mercury-integration)
+
+---
+
+## 1. Product Requirements (PRD)
+
+### Overview
+Koin (formerly Koppla) is a Nuxt 4 SPA for tracking business expenses, importing Mercury bank transactions, logging mileage, and generating tax-ready reports. Designed for solo founders and small agencies.
+
+### Core Goals
+- Replace Wave/QuickBooks for basic startup tracking.
+- Primary data entry via Mercury CSV or live API.
+- One-click CPA-ready tax reports.
+- Mileage tracking with IRS rates.
+
+### Tech Stack
+- **Framework:** Nuxt 4 (Vue 3 Composition API).
+- **Styling:** Tailwind CSS v4 + Nuxt UI.
+- **Persistence:** NuxtHub D1 (SQLite via Drizzle ORM).
+- **Hosting:** Cloudflare Pages.
+
+### Pages & Navigation
+- `pages/index.vue` — main SPA with 5 tabs: Expenses, Mileage, Dashboard, Tax Report, Mercury Import.
+- `pages/settings.vue` — standalone settings page (company name, IRS rate, default payment method, Mercury API token, fiscal year start).
+
+### Components (one per tab + modals)
+- `ExpensesTab.vue`, `MileageTab.vue`, `DashboardTab.vue`, `TaxReportTab.vue`, `MercuryImportTab.vue`
+- `ExpenseModal.vue`, `ContractorFormModal.vue`, `ConfirmModal.vue`
+- `ContractorDirectory.vue`, `RecurringManager.vue`, `EstimatedTaxPayments.vue`
+- `ImportantDatesPanel.vue`, `Prep1099Report.vue`, `AppDatePicker.vue`
+
+### Backup & Restore
+Header buttons allow full JSON backup export and restore. `exportBackup()` writes a versioned JSON file (version: 2) containing all expenses and mileage trips. `restoreBackup(file)` wipes the DB and reloads from the file.
+
+---
+
+## 2. IRS Alignment & Advanced Features
+
+### IRS Mileage Rates
+- **2026 Rate:** $0.725/mile (IRS Notice 2026-10).
+- **2025 Rate:** $0.70/mile.
+- Configurable in Settings (`irsRatePerMile` setting key).
+
+### Schedule C Category Mapping (full list)
+All 21 categories with their Schedule C lines and deductible percentages:
+
+| Category | Schedule C Line | Deductible % |
+|---|---|---|
+| Software & Subscriptions | Line 18 | 100% |
+| Advertising & Marketing | Line 8 | 100% |
+| Commissions & Platform Fees | Line 10 | 100% |
+| Contractor / Freelancer | Line 11 | 100% |
+| Equipment & Technology | Line 13 | 100% (Section 179 eligible) |
+| Business Insurance | Line 15 | 100% |
+| Business Loan Interest | Line 16b | 100% |
+| Legal & Professional Services | Line 17 | 100% |
+| Office Supplies | Line 18 | 100% |
+| Retirement Contributions | Line 19 | 100% |
+| Rent / Coworking Space | Line 20b | 100% |
+| Repairs & Maintenance | Line 21 | 100% |
+| Business Taxes & Licenses | Line 23 | 100% |
+| Business Travel | Line 24a | 100% |
+| Meals & Entertainment | Line 24b | 50% (locked, IRS rule) |
+| Phone & Internet | Line 25 | 50% |
+| Bank & Transaction Fees | Line 27a | 100% |
+| Education & Training | Line 27a | 100% |
+| Owner's Draw / Personal | None | 0% (non-deductible) |
+| Other | Line 27a | user-defined |
+
+### Key Advanced Features
+1. **1099-NEC Tracker:** Tracks payments to contractors. Flags when >$600 is paid (IRS threshold). Contractors can be marked `is1099Exempt`.
+2. **Asset & Equipment (Section 179):** `section179` flag on Equipment expenses enables 100% deduction using `businessUsePct` instead of `deductiblePct`.
+3. **Recurring Expenses:** Templates with frequency (monthly/quarterly/annually) and `autoAdd` flag. `processAutoAdd()` runs on app init and auto-creates expenses when `nextDueDate <= today`, then advances `nextDueDate`. Non-auto-add templates surface via `dueToday` computed for manual review. When adding a new expense, the "Set as recurring" toggle exposes a frequency selector and an "Auto-add on due date" toggle (`recurringAutoAdd`) that controls whether the created template uses `autoAdd: true`.
+4. **Estimated Tax Tracker:** Log for quarterly 1040-ES payments with due date, amount paid, and optional confirmation number.
+5. **Important Dates:** Persistent calendar of IRS deadlines (1099s, quarterly payments, filing dates).
+
+---
+
+## 3. Database Schema
+
+All tables use Drizzle ORM with NuxtHub SQLite. Migrations live in `server/db/migrations/`. Run `drizzle-kit` to generate after schema changes.
+
+### `expenses`
+| Column | Type | Notes |
+|---|---|---|
+| id | text PK | UUID |
+| date | text | ISO date string |
+| vendor | text | |
+| amount | real | Always positive |
+| category | text | Must match CATEGORY_CONFIGS |
+| description | text | Default '' |
+| payment_method | text | 'Mercury Debit' \| 'Mercury ACH' \| 'Credit Card' \| 'Cash' |
+| client_billable | boolean | Default false |
+| tax_deductible | boolean | Default true |
+| deductible_pct | real | 0–100, default 100 |
+| source | text | 'manual' \| 'mercury' |
+| mercury_transaction_id | text | Nullable, for Mercury import linking |
+| contractor_id | text | FK to contractors, nullable |
+| section_179 | boolean | Default false |
+| business_use_pct | real | Default 100 |
+| receipts | text | Nullable, JSON array of receipt file paths/keys |
+| created_at | text | ISO timestamp |
+| updated_at | text | ISO timestamp |
+
+### `mileage_trips`
+| Column | Type | Notes |
+|---|---|---|
+| id | text PK | |
+| date | text | ISO date |
+| from_location | text | |
+| to_location | text | |
+| miles | real | |
+| purpose | text | Default 'Business' |
+| created_at | text | |
+
+### `contractors`
+| Column | Type | Notes |
+|---|---|---|
+| id | text PK | |
+| name | text | |
+| business_type | text | 'individual' \| 'single_member_llc' \| 'partnership' \| 'corporation' |
+| ein | text | Nullable, stored masked |
+| email | text | Nullable |
+| w9_received | boolean | Default false |
+| notes | text | Default '' |
+| is_1099_exempt | boolean | Default false |
+| created_at | text | |
+
+### `recurring_templates`
+| Column | Type | Notes |
+|---|---|---|
+| id | text PK | |
+| vendor | text | |
+| amount | real | |
+| category | text | |
+| payment_method | text | |
+| description | text | Default '' |
+| client_billable | boolean | Default false |
+| tax_deductible | boolean | Default true |
+| deductible_pct | real | Default 100 |
+| frequency | text | 'monthly' \| 'quarterly' \| 'annually' |
+| next_due_date | text | ISO date |
+| end_date | text | Nullable |
+| auto_add | boolean | Default false |
+| active | boolean | Default true |
+| created_at | text | |
+
+### `estimated_tax_payments`
+| Column | Type | Notes |
+|---|---|---|
+| id | text PK | |
+| quarter | text | e.g. 'Q1' |
+| year | integer | |
+| due_date | text | ISO date |
+| amount_paid | real | Nullable |
+| date_paid | text | Nullable |
+| confirmation_number | text | Default '' |
+
+### `settings`
+Key-value store. Known keys: `irsRatePerMile`, `companyName`, `defaultPaymentMethod`, `fiscalYearStart`, `mercury_api_token`.
+
+---
+
+## 4. API Endpoints
+
+All under `server/api/`:
+
+| Route | Methods | Notes |
+|---|---|---|
+| `/api/expenses` | GET, POST | List all / create one |
+| `/api/expenses/[id]` | PUT, DELETE | Update / delete by id |
+| `/api/expenses/bulk` | POST | Bulk `insert`, `delete`, or `update` via `{ action, ... }` body |
+| `/api/mileage` | GET, POST | List all / create one |
+| `/api/mileage/[id]` | DELETE | Delete mileage trip by id |
+| `/api/contractors` | GET, POST | List all / create one |
+| `/api/contractors/[id]` | PUT, DELETE | Update / delete contractor by id |
+| `/api/recurring` | GET, POST | List all / create recurring template |
+| `/api/recurring/[id]` | PUT, DELETE | Update / delete recurring template by id |
+| `/api/estimated-taxes` | GET, POST | List all / create estimated tax payment |
+| `/api/estimated-taxes/[id]` | PUT | Update estimated tax payment by id |
+| `/api/settings` | GET, PUT | GET returns all key-value rows; PUT upserts one key |
+| `/api/receipts/upload` | POST | Upload receipt file; returns file key |
+| `/api/receipts/[...pathname]` | DELETE | Delete receipt file by pathname |
+| `/api/mercury/transactions` | GET | Server-side proxy to Mercury API; requires `mercury_api_token` in settings |
+| `/api/mercury/verify` | POST | Verify Mercury API token connectivity |
+| `/api/admin/wipe` | POST | Wipe all application data (dev/admin only) |
+
+---
+
+## 5. Composables & State
+
+All client state uses **module-level `ref()`s** — no Pinia. Each composable's state is shared across all call sites.
+
+### `useExpenseStore`
+Primary store. Exports:
+- **State:** `expenses`, `mileageTrips`
+- **Init:** `initStore()` — loads expenses + mileage from API on app mount
+- **Expense CRUD:** `addExpense()`, `updateExpense()`, `deleteExpense()`, `bulkDeleteExpenses()`, `bulkUpdateExpenses()`, `importExpenses()`
+- **Receipt:** `attachReceipt(expenseId, fileKey)` — links file to expense
+- **Mileage CRUD:** `addMileageTrip()`, `deleteMileageTrip()`
+- **Backup:** `exportBackup()`, `restoreBackup(file)`
+- **Helpers:** `getTaxDefaultsForCategory(category)`, `getNetDeductible(expense)`, `hasDuplicateExpense(date, vendor, amount)`
+- **Computed:** `monthSpend`, `ytdSpend`, `ytdTaxDeductible`, `ytdBillable`, `categorySpendYtd`, `topVendorsYtd`, `vendorSuggestions`, `totalMilesYtd`, `mileageDeductionYtd`, `monthlySpendYtd`
+- **`ExpenseDraft` UI-only fields:** `isRecurring` (bool), `recurringFrequency` ('monthly'|'quarterly'|'annually'), `recurringAutoAdd` (bool) — used by `ExpenseModal` to create a recurring template on submit; not persisted to the `expenses` table.
+
+Net deductible logic: if `section179` on Equipment, deduct `amount * businessUsePct/100`; otherwise `amount * deductiblePct/100`.
+
+On the frontend, the `Expense` interface stores `receipts` as `string[]` (array of file keys), but in the DB it's stored as text (JSON-serialized for persistence).
+
+### `useSettings`
+- **State:** `irsRatePerMile`, `companyName`, `defaultPaymentMethod`, `fiscalYearStart`, `mercuryApiToken`
+- **Methods:** `loadSettings()`, `saveSetting(key, value, silent?)`
+- Mercury API token is stored in SQLite and kept in this ref for server-side use (never sent plaintext to the client in API responses).
+
+### `useMercuryImport`
+Handles both CSV file parsing and live Mercury API fetch. Key logic:
+- CSV parsing maps Mercury column headers to internal fields.
+- API path uses `server/api/mercury/transactions.get.ts` server proxy.
+- Transfer detection: checks `kind` field (API) or bank description keywords (CSV/API): "transfer from mercury to another bank account", "transfer between your mercury accounts", "acctverify".
+- Smart categorization: Tier 1 — Mercury's own category via `MERCURY_CATEGORY_MAP`; Tier 2 — `VENDOR_CATEGORY_RULES` keyword matching (100+ patterns); Tier 3 — fallback to 'Other'.
+- Duplicate detection: `hasDuplicateExpense(date, vendor, amount)` before bulk import.
+- Preview rows use `MercuryPreviewRow` type with `selected`, `duplicate`, `isTransfer` flags.
+
+### `useRecurring`
+- **State:** `recurringTemplates`
+- **Methods:** `loadRecurring()`, `addTemplate()`, `updateTemplate()`, `deleteTemplate()`, `processAutoAdd()`
+- **Computed:** `dueToday` — active non-autoAdd templates where `nextDueDate <= today`
+- `processAutoAdd()` runs on app init; for each eligible template calls `store.addExpense()` then advances `nextDueDate` by frequency.
+
+### `useContractors`
+- **State:** `contractors`
+- **Methods:** `loadContractors()`, `addContractor()`, `updateContractor()`, `deleteContractor()`, `getYtdSpend(contractorId)`
+- `getYtdSpend` sums expenses linked to a contractor for the current year to determine 1099-NEC threshold ($600).
+
+### `useConfirm`
+- Promise-based confirmation dialog: `confirm(options): Promise<boolean>`.
+- Used throughout for destructive actions.
+
+---
+
+## 6. Mercury Integration
+
+### Architecture
+`server/api/mercury/transactions.get.ts` is a server-side proxy that fetches transactions from Mercury's API using the `mercury_api_token` stored in SQLite. The token never reaches the client.
+
+### Transaction Processing
+1. **Direction:** `amount < 0` = debit (expense); `amount > 0` = credit (ignored or flagged).
+2. **Transfer Detection:** `kind === 'internalTransfer' | 'externalTransfer'` or bank description keywords.
+3. **Smart Categorization (3-tier):**
+   - Tier 1: Mercury's `mercuryCategory` field mapped via `MERCURY_CATEGORY_MAP`.
+   - Tier 2: Vendor name matched against `VENDOR_CATEGORY_RULES` (100+ keyword patterns across 12 categories).
+   - Tier 3: Fallback to 'Other'.
+4. **Duplicate Detection:** Checks existing expenses by date + vendor + amount before showing preview.
+
+### CSV Import
+Parses Mercury-exported CSV files with the same categorization and duplicate detection logic. Users can review and deselect rows before confirming bulk import.
+
+---
+*End of Document*

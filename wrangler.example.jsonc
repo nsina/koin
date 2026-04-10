@@ -1,0 +1,19 @@
+{
+  "name": "your-app-name",
+  "compatibility_date": "2025-01-15",
+
+  // Replace with your own Cloudflare resource IDs
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "your-db-name",
+      "database_id": "your-d1-database-id"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BLOB",
+      "bucket_name": "your-r2-bucket-name"
+    }
+  ]
+}

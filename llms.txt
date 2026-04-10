@@ -1,0 +1,17 @@
+# Koin
+
+> Koin is a Nuxt 4 SPA for expense tracking, tax reporting, and Mercury bank CSV import. It uses NuxtHub for SQLite persistence and Nuxt UI for components.
+
+## Documentation Index
+
+- [Full Consolidated Context (llms-full.txt)](llms-full.txt): Comprehensive technical background in a single file (PRD, Mercury Spec, Migration Plan).
+- [Project Instructions (CLAUDE.md)](CLAUDE.md): Mandatory rules, commands, and architecture for the agent.
+
+## External References
+
+- [Nuxt 4 Documentation](https://nuxt.com/llms.txt): Framework documentation (LLM-optimized).
+- [NuxtHub Documentation](https://hub.nuxt.com/llms.txt): Serverless database and storage (LLM-optimized).
+- [Nuxt UI Documentation](https://ui.nuxt.com/llms.txt): Component library and styling (LLM-optimized).
+- [Mercury API Reference](https://docs.mercury.com/llms.txt): External banking API documentation (LLM-optimized).
+- [Drizzle ORM Documentation](https://orm.drizzle.team/docs/overview): Database ORM.
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs): Styling and utility classes.

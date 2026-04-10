@@ -1,0 +1,44 @@
+{
+  "name": "koin",
+  "version": "1.0.0",
+  "description": "Expense tracking and tax reporting for small businesses.",
+  "author": "Koppla",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format:check": "prettier --check \"app/**/*.{vue,js,ts}\"",
+    "format": "prettier --write \"app/**/*.{vue,js,ts}\"",
+    "typecheck": "nuxt typecheck"
+  },
+  "dependencies": {
+    "@iconify-json/lucide": "^1.2.101",
+    "@iconify-json/simple-icons": "^1.2.76",
+    "@internationalized/date": "^3.12.0",
+    "@libsql/client": "^0.17.2",
+    "@nuxt/ui": "^4.6.1",
+    "@nuxthub/core": "^0.10.7",
+    "drizzle-orm": "^0.45.2",
+    "nuxt": "^4.4.2",
+    "nuxt-charts": "2.1.4",
+    "tailwindcss": "^4.2.2"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.15.2",
+    "@tanstack/vue-table": "^8.21.3",
+    "drizzle-kit": "^0.31.10",
+    "eslint": "^10.2.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.1",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "typescript": "^6.0.2",
+    "vue-tsc": "^3.2.6"
+  },
+  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
+}
