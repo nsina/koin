@@ -1,4 +1,5 @@
-![koin-landing](https://github.com/user-attachments/assets/af1ce57e-1bca-43de-bffa-714c583e2244)
+![koin-landing](https://github.com/user-attachments/assets/32bde489-fb46-43fa-ae8a-c3c91e6c72a8)
+
 
 <h1 align="center">Koin</h1>
 
