@@ -201,6 +201,8 @@ const currentYear = computed(() => now.value?.getFullYear() ?? '')
       </UCard>
     </div>
 
+    <ExpenseContributionHeatmap />
+
     <!-- Charts row 1: Category bar + Vendor donut -->
     <div class="grid gap-4 xl:grid-cols-5">
       <UCard class="xl:col-span-3">
