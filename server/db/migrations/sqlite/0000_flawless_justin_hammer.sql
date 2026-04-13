@@ -1,3 +1,25 @@
+CREATE TABLE `contractors` (
+	`id` text PRIMARY KEY NOT NULL,
+	`name` text NOT NULL,
+	`business_type` text DEFAULT 'individual' NOT NULL,
+	`ein` text,
+	`email` text,
+	`w9_received` integer DEFAULT false NOT NULL,
+	`notes` text DEFAULT '' NOT NULL,
+	`is_1099_exempt` integer DEFAULT false NOT NULL,
+	`created_at` text NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE `estimated_tax_payments` (
+	`id` text PRIMARY KEY NOT NULL,
+	`quarter` text NOT NULL,
+	`year` integer NOT NULL,
+	`due_date` text NOT NULL,
+	`amount_paid` real,
+	`date_paid` text,
+	`confirmation_number` text DEFAULT '' NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE `expenses` (
 	`id` text PRIMARY KEY NOT NULL,
 	`date` text NOT NULL,
@@ -29,28 +51,6 @@ CREATE TABLE `mileage_trips` (
 	`created_at` text NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE `contractors` (
-	`id` text PRIMARY KEY NOT NULL,
-	`name` text NOT NULL,
-	`business_type` text DEFAULT 'individual' NOT NULL,
-	`ein` text,
-	`email` text,
-	`w9_received` integer DEFAULT false NOT NULL,
-	`notes` text DEFAULT '' NOT NULL,
-	`is_1099_exempt` integer DEFAULT false NOT NULL,
-	`created_at` text NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE `estimated_tax_payments` (
-	`id` text PRIMARY KEY NOT NULL,
-	`quarter` text NOT NULL,
-	`year` integer NOT NULL,
-	`due_date` text NOT NULL,
-	`amount_paid` real,
-	`date_paid` text,
-	`confirmation_number` text DEFAULT '' NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE `recurring_templates` (
 	`id` text PRIMARY KEY NOT NULL,
 	`vendor` text NOT NULL,
@@ -67,9 +67,4 @@ CREATE TABLE `recurring_templates` (
 	`auto_add` integer DEFAULT false NOT NULL,
 	`active` integer DEFAULT true NOT NULL,
 	`created_at` text NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE `settings` (
-	`key` text PRIMARY KEY NOT NULL,
-	`value` text NOT NULL
 );

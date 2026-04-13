@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c8a3f12e-4b5d-6e7f-8a9b-0c1d2e3f4a5b",
+  "id": "a29e08be-5a69-427b-82e9-ce181c78e7e7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "contractors": {
@@ -453,30 +453,6 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "settings": {
-      "name": "settings",
-      "columns": {
-        "key": {
-          "name": "key",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "value": {
-          "name": "value",
           "type": "text",
           "primaryKey": false,
           "notNull": true,

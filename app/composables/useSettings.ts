@@ -8,8 +8,9 @@ export function useSettings() {
   const toast = useToast()
 
   async function loadSettings() {
-    const rows = await $fetch<{ key: string; value: string }[]>('/api/settings')
+    const rows = await $fetch<{ key: string; value: string | null }[]>('/api/settings')
     for (const row of rows) {
+      if (row.value === null) continue
       if (row.key === 'irsRatePerMile') irsRatePerMile.value = Number(row.value)
       if (row.key === 'companyName') companyName.value = row.value
       if (row.key === 'defaultPaymentMethod') defaultPaymentMethod.value = row.value
