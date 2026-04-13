@@ -2,16 +2,35 @@
 
 > Koin is a Nuxt 4 SPA for expense tracking, tax reporting, and Mercury bank CSV import. It uses NuxtHub for SQLite persistence, KV for settings, and Nuxt UI for components.
 
+This file serves as a curated map for LLMs to understand the Koin codebase, its architecture, and its core dependencies. Use the links below to navigate the technical documentation.
+
 ## Documentation Index
 
-- [Full Consolidated Context (llms-full.txt)](llms-full.txt): Comprehensive technical background in a single file (PRD, Mercury Spec, Migration Plan).
-- [Project Instructions (CLAUDE.md)](CLAUDE.md): Mandatory rules, commands, and architecture for the agent.
+- [Full Consolidated Context (llms-full.txt)](llms-full.txt): Comprehensive technical background including PRD, Database Schema, and API specifications.
+- [Project Instructions (CLAUDE.md)](CLAUDE.md): Critical development rules, CLI commands, and architectural mandates.
 
-## External References
+## Optional
 
-- [Nuxt 4 Documentation](https://nuxt.com/llms.txt): Framework documentation (LLM-optimized).
-- [NuxtHub Documentation](https://hub.nuxt.com/llms.txt): Serverless database and storage (LLM-optimized).
-- [Nuxt UI Documentation](https://ui.nuxt.com/llms.txt): Component library and styling (LLM-optimized).
-- [Mercury API Reference](https://docs.mercury.com/llms.txt): External banking API documentation (LLM-optimized).
-- [Drizzle ORM Documentation](https://orm.drizzle.team/docs/overview): Database ORM.
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs): Styling and utility classes.
+The following references provide deeper context on the external libraries and infrastructure used by Koin.
+
+### External References
+- [Nuxt 4 Documentation](https://nuxt.com/llms.txt): Core framework features and Vue 3 Composition API patterns.
+- [NuxtHub Documentation](https://hub.nuxt.com/llms.txt): Serverless infrastructure for D1, KV, and Blob storage.
+- [Nuxt UI Documentation](https://ui.nuxt.com/llms.txt): Component library for styling and interactive elements.
+- [Mercury API Reference](https://docs.mercury.com/llms.txt): Documentation for the Mercury banking API.
+- [Drizzle ORM Documentation](https://orm.drizzle.team/llms.txt): TypeScript ORM for SQLite/D1.
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs): Utility-first CSS framework for custom styling.
+
+### Core Documentation (Deep Links)
+- [NuxtHub D1 Database](https://hub.nuxt.com/raw/docs/database.md): Database management and CLI usage.
+- [NuxtHub KV Storage](https://hub.nuxt.com/raw/docs/kv/usage.md): Key-Value store SDK and CRUD operations.
+- [NuxtHub Blob Storage](https://hub.nuxt.com/raw/docs/blob/usage.md): File upload and management for receipts.
+- [Drizzle SQLite Guide](https://orm.drizzle.team/docs/get-started/sqlite-new): Schema definition and query building for SQLite.
+- [Drizzle D1 Connection](https://orm.drizzle.team/docs/connect-cloudflare-d1): Configuration for Cloudflare D1.
+- [Nuxt UI Form & Validation](https://ui.nuxt.com/raw/docs/components/form.md): Handling expense and contractor inputs.
+- [Nuxt UI Data Table](https://ui.nuxt.com/raw/docs/components/table.md): Displaying and filtering expense records.
+- [Nuxt UI Modal](https://ui.nuxt.com/raw/docs/components/modal.md): Implementation of dialogs and confirm prompts.
+- [Nuxt UI Navigation](https://ui.nuxt.com/raw/docs/components/navigation-menu.md): App layout and tab-based navigation.
+- [Nuxt UI Date Picker](https://ui.nuxt.com/raw/docs/components/popover.md): Implementation of the calendar-based date selector.
+- [Mercury Transactions API](https://docs.mercury.com/reference/transactions): Endpoint details for bank data fetching.
+- [Mercury API Auth](https://docs.mercury.com/reference/authentication): Managing secure access to banking data.

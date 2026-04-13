@@ -1,6 +1,6 @@
 # Koin - Project Context (Full)
 
-This file contains the consolidated documentation for the Koin project, providing full technical and business context for LLMs.
+> This file contains the consolidated documentation for the Koin project, providing full technical and business context for LLMs. It includes product requirements, database schemas, API documentation, and state management details.
 
 ---
 
@@ -11,6 +11,7 @@ This file contains the consolidated documentation for the Koin project, providin
 4. [API Endpoints](#4-api-endpoints)
 5. [Composables & State](#5-composables--state)
 6. [Mercury Integration](#6-mercury-integration)
+7. [Optional: External Documentation Links](#7-optional-external-documentation-links)
 
 ---
 
@@ -272,5 +273,26 @@ Handles both CSV file parsing and live Mercury API fetch. Key logic:
 Parses Mercury-exported CSV files with the same categorization and duplicate detection logic. Users can review and deselect rows before confirming bulk import.
 
 ---
-*End of Document*
+
+## 7. Optional: External Documentation Links
+
+For more detailed information on the libraries and platforms used in Koin, refer to these specific documentation sections.
+
+### Framework & Persistence
+- **Nuxt Hub:** [D1 Database](https://hub.nuxt.com/raw/docs/database.md), [KV Storage](https://hub.nuxt.com/raw/docs/kv/usage.md), [Blob Storage](https://hub.nuxt.com/raw/docs/blob/usage.md)
+- **Drizzle ORM:** [SQLite Core](https://orm.drizzle.team/docs/get-started/sqlite-new), [Cloudflare D1 Connect](https://orm.drizzle.team/docs/connect-cloudflare-d1), [Select Queries](https://orm.drizzle.team/docs/select)
+- **Nuxt 4:** [Framework Overview](https://nuxt.com/llms.txt)
+
+### UI Components (Nuxt UI)
+- [Form & Validation](https://ui.nuxt.com/raw/docs/components/form.md)
+- [Data Table](https://ui.nuxt.com/raw/docs/components/table.md)
+- [Modal & Dialogs](https://ui.nuxt.com/raw/docs/components/modal.md)
+- [Navigation Menu](https://ui.nuxt.com/raw/docs/components/navigation-menu.md)
+- [Popover & Calendar](https://ui.nuxt.com/raw/docs/components/popover.md)
+
+### Banking (Mercury)
+- [Transactions API Reference](https://docs.mercury.com/reference/transactions)
+- [Mercury API Authentication](https://docs.mercury.com/reference/authentication)
+
+---
 *End of Document*
