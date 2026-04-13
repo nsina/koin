@@ -15,5 +15,11 @@
       "binding": "BLOB",
       "bucket_name": "your-r2-bucket-name"
     }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "your-kv-namespace-id"
+    }
   ]
 }

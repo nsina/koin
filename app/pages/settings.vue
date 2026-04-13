@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { PAYMENT_METHODS } from '~/composables/useExpenseStore'
 
-definePageMeta({ layout: false })
+definePageMeta({ layout: false, ssr: false })
 
 const store = useExpenseStore()
 const {
@@ -17,6 +17,7 @@ const { confirm } = useConfirm()
 const {
   public: { appVersion, appAuthor, appLicense, appDescription }
 } = useRuntimeConfig()
+const currentYear = new Date().getFullYear()
 
 const draftCompanyName = ref(companyName.value)
 const draftRate = ref(irsRatePerMile.value)
@@ -429,7 +430,7 @@ async function wipeAllData() {
         </div>
         <p class="text-xs text-muted">{{ appDescription }}</p>
         <p class="text-xs text-muted">
-          &copy; {{ new Date().getFullYear() }} {{ appAuthor }} &middot; {{ appLicense }} License
+          &copy; {{ currentYear }} {{ appAuthor }} &middot; {{ appLicense }} License
         </p>
       </div>
     </div>

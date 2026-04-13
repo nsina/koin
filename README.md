@@ -16,6 +16,7 @@
 <a href="LICENSE" target="__blank"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
 <img src="https://img.shields.io/badge/Nuxt-4.x-00DC82.svg?logo=nuxt.js&logoColor=white" alt="Nuxt 4">
 <img src="https://img.shields.io/badge/SQLite-D1-003B57.svg?logo=sqlite&logoColor=white" alt="D1">
+<img src="https://img.shields.io/badge/Cloudflare-KV-F38020.svg?logo=cloudflare&logoColor=white" alt="KV">
 </p>
 
 ## Features
@@ -57,7 +58,7 @@ This is the best way to test the full feature set, including Mercury API integra
 2. In Koin, go to **Settings** and paste the token into the Mercury API field
 3. Use the **Mercury Import** tab to sync transactions by date range
 
-The token is stored server-side in SQLite and never sent to the browser in plaintext.
+The token is stored server-side in KV and never sent to the browser in plaintext.
 
 ## Deployment
 
@@ -69,10 +70,11 @@ Copy the example wrangler config and fill in your own Cloudflare resource IDs:
 cp wrangler.example.jsonc wrangler.jsonc
 ```
 
-Edit `wrangler.jsonc` with your D1 database ID and R2 bucket name. You can find/create these in the [Cloudflare dashboard](https://dash.cloudflare.com):
+Edit `wrangler.jsonc` with your D1 database ID, R2 bucket name, and KV namespace ID. You can find/create these in the [Cloudflare dashboard](https://dash.cloudflare.com):
 
 - **D1:** Storage & Databases → D1 SQL database → Create Database
 - **R2:** Storage & Databases → R2 Object Storage → Create bucket
+- **KV:** Storage & Databases → KV → Create a namespace
 
 ### 2. Deploy to Cloudflare Workers
 

@@ -16,7 +16,7 @@ export const expenses = sqliteTable('expenses', {
   contractorId:         text('contractor_id'),
   section179:     integer('section_179', { mode: 'boolean' }).notNull().default(false),
   businessUsePct: real('business_use_pct').notNull().default(100),
-  receipts:       text('receipts'),
+  receipts:       text('receipts', { mode: 'json' }).$type<string[]>(),
   createdAt:      text('created_at').notNull(),
   updatedAt:      text('updated_at').notNull()
 })
@@ -29,11 +29,6 @@ export const mileageTrips = sqliteTable('mileage_trips', {
   miles:     real('miles').notNull(),
   purpose:   text('purpose').notNull().default('Business'),
   createdAt: text('created_at').notNull()
-})
-
-export const settings = sqliteTable('settings', {
-  key:   text('key').primaryKey(),
-  value: text('value').notNull()
 })
 
 export const contractors = sqliteTable('contractors', {

@@ -205,19 +205,7 @@ export function useExpenseStore() {
             ? v.tax_deductible
             : defaults.taxDeductible,
       deductiblePct,
-      receipts: (() => {
-        const raw = v.receipts
-        if (Array.isArray(raw)) return raw.map(String)
-        if (typeof raw === 'string' && raw) {
-          try {
-            const parsed = JSON.parse(raw)
-            return Array.isArray(parsed) ? parsed.map(String) : []
-          } catch {
-            return []
-          }
-        }
-        return []
-      })(),
+      receipts: Array.isArray(v.receipts) ? (v.receipts as unknown[]).map(String) : [],
       source: v.source === 'mercury' ? 'mercury' : 'manual',
       mercuryTransactionId:
         typeof v.mercuryTransactionId === 'string'
@@ -290,12 +278,12 @@ export function useExpenseStore() {
       contractorId: draft.contractorId ?? null,
       section179: draft.section179,
       businessUsePct: draft.businessUsePct,
-      receipts: JSON.stringify(draft.receiptKeys),
+      receipts: draft.receiptKeys,
       createdAt: nowISO,
       updatedAt: nowISO
     }
     await $fetch('/api/expenses', { method: 'POST', body: row })
-    expenses.value.unshift({ ...row, receipts: draft.receiptKeys })
+    expenses.value.unshift(row)
     toast.add({ title: 'Expense added', color: 'success' })
   }
 
@@ -325,7 +313,7 @@ export function useExpenseStore() {
     }
     await $fetch(`/api/expenses/${id}`, {
       method: 'PUT',
-      body: { ...updated, receipts: JSON.stringify(draft.receiptKeys) }
+      body: updated
     })
     expenses.value[index] = updated
     toast.add({ title: 'Expense updated', color: 'success' })
@@ -371,7 +359,7 @@ export function useExpenseStore() {
     const updated = [...expense.receipts, pathname]
     await $fetch(`/api/expenses/${expenseId}`, {
       method: 'PUT',
-      body: { receipts: JSON.stringify(updated) }
+      body: { receipts: updated }
     })
     expense.receipts = updated
   }
@@ -388,7 +376,7 @@ export function useExpenseStore() {
       method: 'POST',
       body: {
         action: 'insert',
-        rows: imported.map((row) => ({ ...row, receipts: JSON.stringify(row.receipts ?? []) }))
+        rows: imported
       }
     })
     expenses.value = [...imported, ...expenses.value]
@@ -470,7 +458,7 @@ export function useExpenseStore() {
           method: 'POST',
           body: {
             action: 'insert',
-            rows: restoredExpenses.map((e) => ({ ...e, receipts: JSON.stringify(e.receipts) }))
+            rows: restoredExpenses
           }
         })
       }

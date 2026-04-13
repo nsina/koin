@@ -28,7 +28,8 @@ export default defineNuxtConfig({
   // production uses Cloudflare bindings from wrangler.jsonc (D1 + R2).
   hub: {
     db: 'sqlite',
-    blob: true
+    blob: true,
+    kv: true
   },
 
   eslint: {

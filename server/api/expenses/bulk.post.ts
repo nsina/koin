@@ -38,9 +38,7 @@ export default defineEventHandler(async (event) => {
         .select({ receipts: expenses.receipts })
         .from(expenses)
         .where(inArray(expenses.id, chunk))
-      const pathnames = rows.flatMap((r) =>
-        r.receipts ? (JSON.parse(r.receipts) as string[]) : []
-      )
+      const pathnames = rows.flatMap((r) => r.receipts ?? [])
       if (pathnames.length > 0) await blob.del(pathnames)
       await db.delete(expenses).where(inArray(expenses.id, chunk))
     }

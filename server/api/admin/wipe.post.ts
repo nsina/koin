@@ -5,8 +5,7 @@ import {
   estimatedTaxPayments,
   expenses,
   mileageTrips,
-  recurringTemplates,
-  settings
+  recurringTemplates
 } from '../../db/schema'
 
 const DELETE_CONFIRMATION = 'DELETE'
@@ -42,7 +41,7 @@ export default defineEventHandler(async (event) => {
   await db.delete(contractors)
   await db.delete(recurringTemplates)
   await db.delete(estimatedTaxPayments)
-  await db.delete(settings)
+  await useStorage('kv').clear()
 
   await deleteAllBlobs()
 
