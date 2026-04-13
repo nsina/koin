@@ -1,6 +1,6 @@
 # Koin
 
-> Koin is a Nuxt 4 SPA for expense tracking, tax reporting, and Mercury bank CSV import. It uses NuxtHub for SQLite persistence and Nuxt UI for components.
+> Koin is a Nuxt 4 SPA for expense tracking, tax reporting, and Mercury bank CSV import. It uses NuxtHub for SQLite persistence, KV for settings, and Nuxt UI for components.
 
 ## Documentation Index
 

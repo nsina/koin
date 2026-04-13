@@ -168,8 +168,12 @@ All tables use Drizzle ORM with NuxtHub SQLite. Migrations live in `server/db/mi
 | date_paid | text | Nullable |
 | confirmation_number | text | Default '' |
 
-### `settings`
-Key-value store. Known keys: `irsRatePerMile`, `companyName`, `defaultPaymentMethod`, `fiscalYearStart`, `mercury_api_token`.
+---
+
+## 3.1 KV Storage
+
+Settings are stored in NuxtHub KV (Cloudflare Workers KV / local `.data/kv`) using `useStorage('kv')`.
+Keys: `irsRatePerMile`, `companyName`, `defaultPaymentMethod`, `fiscalYearStart`, `mercury_api_token`.
 
 ---
 
@@ -217,12 +221,12 @@ Primary store. Exports:
 
 Net deductible logic: if `section179` on Equipment, deduct `amount * businessUsePct/100`; otherwise `amount * deductiblePct/100`.
 
-On the frontend, the `Expense` interface stores `receipts` as `string[]` (array of file keys), but in the DB it's stored as text (JSON-serialized for persistence).
+The `Expense` interface stores `receipts` as `string[]` (array of file keys). The DB column is `text({ mode: 'json' })` — Drizzle serializes/deserializes the array transparently; no manual `JSON.stringify`/`JSON.parse` is needed.
 
 ### `useSettings`
 - **State:** `irsRatePerMile`, `companyName`, `defaultPaymentMethod`, `fiscalYearStart`, `mercuryApiToken`
 - **Methods:** `loadSettings()`, `saveSetting(key, value, silent?)`
-- Mercury API token is stored in SQLite and kept in this ref for server-side use (never sent plaintext to the client in API responses).
+- Mercury API token is stored in KV and kept in this ref for server-side use (never sent plaintext to the client in API responses).
 
 ### `useMercuryImport`
 Handles both CSV file parsing and live Mercury API fetch. Key logic:
@@ -253,7 +257,7 @@ Handles both CSV file parsing and live Mercury API fetch. Key logic:
 ## 6. Mercury Integration
 
 ### Architecture
-`server/api/mercury/transactions.get.ts` is a server-side proxy that fetches transactions from Mercury's API using the `mercury_api_token` stored in SQLite. The token never reaches the client.
+`server/api/mercury/transactions.get.ts` is a server-side proxy that fetches transactions from Mercury's API using the `mercury_api_token` stored in KV. The token never reaches the client.
 
 ### Transaction Processing
 1. **Direction:** `amount < 0` = debit (expense); `amount > 0` = credit (ignored or flagged).
@@ -268,4 +272,5 @@ Handles both CSV file parsing and live Mercury API fetch. Key logic:
 Parses Mercury-exported CSV files with the same categorization and duplicate detection logic. Users can review and deselect rows before confirming bulk import.
 
 ---
+*End of Document*
 *End of Document*
