@@ -15,7 +15,9 @@
     "lint:fix": "eslint . --fix",
     "format:check": "prettier --check \"app/**/*.{vue,js,ts}\"",
     "format": "prettier --write \"app/**/*.{vue,js,ts}\"",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "release": "changelogen --release && git push --follow-tags",
+    "release:preview": "changelogen --no-bump --no-tag"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.101",
