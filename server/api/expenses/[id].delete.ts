@@ -6,9 +6,8 @@ import { eq } from 'drizzle-orm'
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')!
   const [row] = await db.select({ receipts: expenses.receipts }).from(expenses).where(eq(expenses.id, id))
-  if (row?.receipts) {
-    const pathnames: string[] = JSON.parse(row.receipts)
-    if (pathnames.length > 0) await blob.del(pathnames)
+  if (row?.receipts?.length) {
+    await blob.del(row.receipts)
   }
   await db.delete(expenses).where(eq(expenses.id, id))
   return { ok: true }

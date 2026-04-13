@@ -8,8 +8,8 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   if (body.receipts !== undefined) {
     const [old] = await db.select({ receipts: expenses.receipts }).from(expenses).where(eq(expenses.id, id))
-    const oldKeys: string[] = old?.receipts ? JSON.parse(old.receipts) : []
-    const newKeys: string[] = JSON.parse(body.receipts)
+    const oldKeys: string[] = old?.receipts ?? []
+    const newKeys: string[] = body.receipts
     const removed = oldKeys.filter((k) => !newKeys.includes(k))
     if (removed.length > 0) await blob.del(removed)
   }
