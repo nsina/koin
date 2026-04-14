@@ -1,6 +1,5 @@
 ![koin-landing](https://github.com/user-attachments/assets/32bde489-fb46-43fa-ae8a-c3c91e6c72a8)
 
-
 <h1 align="center">Koin</h1>
 
 <p align="center">
@@ -74,7 +73,7 @@ Edit `wrangler.jsonc` with your D1 database ID, R2 bucket name, and KV namespace
 
 - **D1:** Storage & Databases → D1 SQL database → Create Database
 - **R2:** Storage & Databases → R2 Object Storage → Create bucket
-- **KV:** Storage & Databases → KV → Create a namespace
+- **KV:** Storage & Databases → Workers KV → Create Instance
 
 ### 2. Deploy to Cloudflare Workers
 
