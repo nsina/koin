@@ -51,70 +51,29 @@ const TRANSFER_BANK_DESCRIPTIONS = [
   'acctverify' // Ally/Plaid micro-deposits for account verification
 ]
 
-// Mercury "Category" column → our category names
+// Mercury's built-in category names (exact strings from their UI) → our category names
 const MERCURY_CATEGORY_MAP: Record<string, string> = {
-  // Software
   'Software & Subscriptions': 'Software & Subscriptions',
-  Software: 'Software & Subscriptions',
-  // Advertising
-  'Advertising & Marketing': 'Advertising & Marketing',
   'Marketing & Advertising': 'Advertising & Marketing',
-  Marketing: 'Advertising & Marketing',
-  Advertising: 'Advertising & Marketing',
-  // Contractors
-  'Contractor / Freelancer': 'Contractors & Freelancers',
-  'Contractors & Freelancers': 'Contractors & Freelancers',
-  Contractors: 'Contractors & Freelancers',
-  ContractorFreelancer: 'Contractors & Freelancers',
-  // Equipment
-  'Equipment & Technology': 'Equipment & Hardware',
-  'Equipment & Hardware': 'Equipment & Hardware',
-  Equipment: 'Equipment & Hardware',
-  Technology: 'Equipment & Hardware',
-  Hardware: 'Equipment & Hardware',
-  // Insurance
-  'Business Insurance': 'Business Insurance',
-  Insurance: 'Business Insurance',
-  // Legal / Professional
-  'Professional Services': 'Legal, CPA & Professional',
   'Legal & Professional Services': 'Legal, CPA & Professional',
-  'Legal, CPA & Professional': 'Legal, CPA & Professional',
-  ProfessionalServices: 'Legal, CPA & Professional',
-  Legal: 'Legal, CPA & Professional',
-  // Office
-  OfficeSupplies: 'Office Supplies',
-  'Office Supplies': 'Office Supplies',
-  // Travel
-  'Business Travel': 'Travel & Lodging',
-  'Travel & Lodging': 'Travel & Lodging',
-  Travel: 'Travel & Lodging',
-  // Meals
-  'Meals & Entertainment': 'Meals & Coffee (Business)',
-  'Meals & Coffee (Business)': 'Meals & Coffee (Business)',
-  Meals: 'Meals & Coffee (Business)',
-  'Food & Drink': 'Meals & Coffee (Business)',
-  // Phone / Internet
-  'Phone & Internet': 'Phone & Internet',
-  Utilities: 'Phone & Internet',
-  // Education
-  'Education & Training': 'Education & Courses',
-  'Education & Courses': 'Education & Courses',
-  Education: 'Education & Courses',
-  // Bank fees
-  'Bank & Transaction Fees': 'Bank & Wire Fees',
-  'Bank & Wire Fees': 'Bank & Wire Fees',
-  BankFees: 'Bank & Wire Fees',
-  // Commissions / platform fees
-  'Commissions & Platform Fees': 'Platform Fees & Commissions',
-  'Platform Fees & Commissions': 'Platform Fees & Commissions',
-  Commissions: 'Platform Fees & Commissions',
-  // Taxes & licenses
-  'Business Taxes & Licenses': 'Business Taxes & Licenses',
+  Insurance: 'Business Insurance',
+  'Office Supplies & Equipment': 'Office Supplies',
+  'Travel & Transportation': 'Travel & Lodging',
+  'Payment Processing Fees': 'Platform Fees & Commissions',
+  'Rent & Utilities': 'Office Rent & Coworking',
+  Entertainment: 'Meals & Coffee (Business)',
+  Payroll: 'Contractors & Freelancers',
   Taxes: 'Business Taxes & Licenses',
-  // Rent
-  'Rent / Coworking Space': 'Office Rent & Coworking',
-  'Office Rent & Coworking': 'Office Rent & Coworking',
-  Rent: 'Office Rent & Coworking'
+  COGS: 'Other / Misc Business',
+  'Shipping & Postage': 'Other / Misc Business',
+  'Employee Benefits': 'Other / Misc Business',
+  'Inventory & Materials': 'Other / Misc Business',
+  'Credit & Loan Payments': 'Other / Misc Business',
+  // Income/transfer categories — flagged as non-expense by transfer detection upstream
+  'Financing Proceeds': "Owner's Draw / Personal Transfer",
+  'Interest Earned': 'Other / Misc Business',
+  Transfer: "Owner's Draw / Personal Transfer",
+  Revenue: 'Other / Misc Business'
 }
 
 // ─── Composable ───────────────────────────────────────────────────────────────
