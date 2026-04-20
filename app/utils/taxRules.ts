@@ -200,14 +200,6 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     uiHint: '🔒 Non-deductible. Taking cash out of your business is not an expense.'
   },
   {
-    name: 'Estimated Tax Payments',
-    irsName: 'N/A',
-    scheduleCLine: null,
-    defaultPct: 0,
-    isLocked: true,
-    uiHint: '🔒 Paying the IRS is a personal liability, not a business deduction.'
-  },
-  {
     name: 'Fines & Parking Tickets',
     irsName: 'N/A',
     scheduleCLine: null,
