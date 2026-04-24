@@ -3,7 +3,7 @@
 <h1 align="center">Koin</h1>
 
 <p align="center">
-  <img src="public/logos/logo-2x.png" width="120" alt="Koin Logo" />
+  <img src="public/logos/logo-2x.png" width="100" alt="Koin Logo" />
 </p>
 
 <p align="center">
@@ -12,13 +12,17 @@
 </p>
 
 <p align="center">
-<a href="LICENSE" target="__blank"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
-<img src="https://img.shields.io/badge/Nuxt-4.x-00DC82.svg?logo=nuxt.js&logoColor=white" alt="Nuxt 4">
-<img src="https://img.shields.io/badge/SQLite-D1-003B57.svg?logo=sqlite&logoColor=white" alt="D1">
-<img src="https://img.shields.io/badge/Cloudflare-KV-F38020.svg?logo=cloudflare&logoColor=white" alt="KV">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/Nuxt-4.x-00DC82.svg?logo=nuxt.js&logoColor=white" alt="Nuxt 4">
+  <img src="https://img.shields.io/badge/SQLite-D1-003B57.svg?logo=sqlite&logoColor=white" alt="D1">
+  <img src="https://img.shields.io/badge/Cloudflare-Workers-F38020.svg?logo=cloudflare&logoColor=white" alt="Cloudflare">
 </p>
 
-## Features
+---
+
+## What it does
+
+Most expense trackers are either too expensive, too complicated, or want access to your bank account. Koin is a self-hosted Nuxt app that runs on your own Cloudflare account — or entirely locally if you prefer.
 
 - **Mercury Bank Sync** — Import via API (real-time) or CSV; auto-categorizes 100+ vendor patterns.
 - **Expense Tracking** — Log expenses with receipt attachments and IRS Schedule C category mapping.
@@ -42,8 +46,10 @@
 ### Local Development
 
 ```bash
+git clone https://github.com/nsina/koin.git
+cd koin
 pnpm install
-npx nuxi hub db migrate   # apply migrations to local SQLite
+npx nuxi hub db migrate
 pnpm dev
 ```
 
@@ -66,6 +72,7 @@ The token is stored server-side in KV and never sent to the browser in plaintext
 Copy the example wrangler config and fill in your own Cloudflare resource IDs:
 
 ```bash
+# 1. Copy and fill in your Cloudflare resource IDs
 cp wrangler.example.jsonc wrangler.jsonc
 ```
 
