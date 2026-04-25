@@ -65,6 +65,8 @@ const filters = reactive({
   to: ''
 })
 
+const categoryListboxItems = TAX_CATEGORIES.map((c) => ({ label: c.name, value: c.name }))
+
 // ── Date preset state ─────────────────────────────────────────────────────────
 
 const datePreset = ref('this-year')
@@ -774,24 +776,14 @@ function setSelectedCategory(name: string) {
 
                 <div class="space-y-3">
                   <UFormField label="Category">
-                    <div class="max-h-48 overflow-y-auto rounded-md border border-default">
-                      <div
-                        v-for="cat in TAX_CATEGORIES"
-                        :key="cat.name"
-                        class="px-3 py-1.5 hover:bg-elevated"
-                      >
-                        <UCheckbox
-                          :label="cat.name"
-                          :model-value="filters.category.includes(cat.name)"
-                          @update:model-value="
-                            (checked: boolean) => {
-                              if (checked) filters.category.push(cat.name)
-                              else filters.category = filters.category.filter((c) => c !== cat.name)
-                            }
-                          "
-                        />
-                      </div>
-                    </div>
+                    <UListbox
+                      v-model="filters.category"
+                      :items="categoryListboxItems"
+                      multiple
+                      value-key="value"
+                      :filter="{ placeholder: 'Search categories...' }"
+                      class="max-h-48 w-full"
+                    />
                     <UButton
                       v-if="filters.category.length > 0"
                       :label="`Clear (${filters.category.length} selected)`"
