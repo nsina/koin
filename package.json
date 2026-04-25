@@ -20,16 +20,16 @@
     "release:preview": "changelogen --no-bump --no-tag"
   },
   "dependencies": {
-    "@iconify-json/lucide": "^1.2.102",
+    "@iconify-json/lucide": "^1.2.103",
     "@iconify-json/simple-icons": "^1.2.79",
     "@internationalized/date": "^3.12.1",
-    "@libsql/client": "^0.17.2",
+    "@libsql/client": "^0.17.3",
     "@nuxt/ui": "^4.7.0",
     "@nuxthub/core": "^0.10.7",
     "drizzle-orm": "^0.45.2",
     "nuxt": "^4.4.2",
     "nuxt-charts": "2.1.4",
-    "tailwindcss": "^4.2.2"
+    "tailwindcss": "^4.2.4"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.15.2",
@@ -39,7 +39,7 @@
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.8.3",
-    "prettier-plugin-tailwindcss": "^0.7.2",
+    "prettier-plugin-tailwindcss": "^0.7.3",
     "typescript": "^6.0.3",
     "vue-tsc": "^3.2.7"
   },
