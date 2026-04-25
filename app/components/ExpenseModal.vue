@@ -79,6 +79,7 @@ const contractorItems = computed(() => [
 
 const pendingFiles = ref<File[] | null>(null)
 const uploading = ref(false)
+const descriptionRef = ref<{ autoResize: () => void } | null>(null)
 
 function makeDraft(): ExpenseDraft {
   if (props.expense) {
@@ -137,6 +138,7 @@ watch(
     if ((open && !wasOpen) || expenseChanged) {
       Object.assign(draft, makeDraft())
       pendingFiles.value = null
+      nextTick(() => descriptionRef.value?.autoResize())
     }
   },
   { immediate: true }
@@ -474,6 +476,7 @@ async function submit() {
 
         <UFormField label="Description (optional)" class="w-full">
           <UTextarea
+            ref="descriptionRef"
             v-model="draft.description"
             :rows="2"
             autoresize
