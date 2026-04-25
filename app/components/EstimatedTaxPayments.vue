@@ -63,8 +63,8 @@ function statusLabel(p: TaxPayment): string {
 </script>
 
 <template>
-  <div>
-    <button class="flex w-full items-center justify-between py-2 text-left" @click="open = !open">
+  <UCollapsible v-model:open="open">
+    <button class="flex w-full items-center justify-between py-2 text-left">
       <span class="font-semibold">Quarterly Estimated Tax Payments</span>
       <UIcon
         :name="open ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
@@ -72,75 +72,83 @@ function statusLabel(p: TaxPayment): string {
       />
     </button>
 
-    <div v-if="open" class="mt-3 overflow-x-auto rounded-xl border border-default">
-      <table class="min-w-full">
-        <thead>
-          <tr class="table-header-row">
-            <th class="px-4 py-3">Quarter</th>
-            <th class="px-4 py-3">Period</th>
-            <th class="px-4 py-3">IRS Due</th>
-            <th class="px-4 py-3 text-right">Amount Paid</th>
-            <th class="px-4 py-3">Date Paid</th>
-            <th class="px-4 py-3">Confirmation #</th>
-            <th class="px-4 py-3 text-center">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="p in payments" :key="p.id" class="border-b border-muted last:border-0">
-            <td class="px-4 py-3 font-semibold">{{ p.quarter }} {{ p.year }}</td>
-            <td class="px-4 py-3 text-sm text-muted">
-              <span v-if="p.quarter === 'Q1'">Jan 1 – Mar 31</span>
-              <span v-else-if="p.quarter === 'Q2'">Apr 1 – May 31</span>
-              <span v-else-if="p.quarter === 'Q3'">Jun 1 – Aug 31</span>
-              <span v-else>Sep 1 – Dec 31</span>
-            </td>
-            <td class="px-4 py-3 text-sm">{{ formatDateLong(p.dueDate) }}</td>
-            <td class="px-4 py-3 text-right">
-              <UInput
-                :model-value="p.amountPaid != null ? p.amountPaid : undefined"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-                class="w-32 text-right"
-                @update:model-value="
-                  (v) => {
-                    p.amountPaid = v ? Number(v) : null
-                  }
-                "
-                @blur="savePayment(p)"
-              />
-            </td>
-            <td class="px-4 py-3">
-              <AppDatePicker
-                :model-value="p.datePaid ?? undefined"
-                @update:model-value="
-                  (v) => {
-                    p.datePaid = v || null
-                    savePayment(p)
-                  }
-                "
-              />
-            </td>
-            <td class="px-4 py-3">
-              <UInput
-                v-model="p.confirmationNumber"
-                placeholder="Optional"
-                class="w-36"
-                @blur="savePayment(p)"
-              />
-            </td>
-            <td class="px-4 py-3 text-center">
-              <UBadge :label="statusLabel(p)" :color="statusColor(p)" variant="subtle" size="sm" />
-            </td>
-          </tr>
-          <tr class="border-t-2 border-default bg-muted font-semibold">
-            <td colspan="3" class="px-4 py-3">Total estimated taxes paid</td>
-            <td class="px-4 py-3 text-right tabular-nums">{{ formatCurrency(totalPaid) }}</td>
-            <td colspan="3" />
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+    <template #content>
+      <div class="mt-3 overflow-x-auto rounded-xl border border-default">
+        <table class="min-w-full">
+          <thead>
+            <tr class="table-header-row">
+              <th class="px-4 py-3">Quarter</th>
+              <th class="px-4 py-3">Period</th>
+              <th class="px-4 py-3">IRS Due</th>
+              <th class="px-4 py-3 text-right">Amount Paid</th>
+              <th class="px-4 py-3">Date Paid</th>
+              <th class="px-4 py-3">Confirmation #</th>
+              <th class="px-4 py-3 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="p in payments" :key="p.id" class="border-b border-muted last:border-0">
+              <td class="px-4 py-3 font-semibold">{{ p.quarter }} {{ p.year }}</td>
+              <td class="px-4 py-3 text-sm text-muted">
+                <span v-if="p.quarter === 'Q1'">Jan 1 – Mar 31</span>
+                <span v-else-if="p.quarter === 'Q2'">Apr 1 – May 31</span>
+                <span v-else-if="p.quarter === 'Q3'">Jun 1 – Aug 31</span>
+                <span v-else>Sep 1 – Dec 31</span>
+              </td>
+              <td class="px-4 py-3 text-sm">{{ formatDateLong(p.dueDate) }}</td>
+              <td class="px-4 py-3 text-right">
+                <UInputNumber
+                  :model-value="p.amountPaid ?? undefined"
+                  :min="0"
+                  :step="0.01"
+                  :increment="false"
+                  :decrement="false"
+                  placeholder="0.00"
+                  class="w-32"
+                  @update:model-value="
+                    (v) => {
+                      p.amountPaid = v ?? null
+                    }
+                  "
+                  @blur="savePayment(p)"
+                />
+              </td>
+              <td class="px-4 py-3">
+                <AppDatePicker
+                  :model-value="p.datePaid ?? undefined"
+                  @update:model-value="
+                    (v) => {
+                      p.datePaid = v || null
+                      savePayment(p)
+                    }
+                  "
+                />
+              </td>
+              <td class="px-4 py-3">
+                <UInput
+                  v-model="p.confirmationNumber"
+                  placeholder="Optional"
+                  class="w-36"
+                  @blur="savePayment(p)"
+                />
+              </td>
+              <td class="px-4 py-3 text-center">
+                <UBadge
+                  :label="statusLabel(p)"
+                  :color="statusColor(p)"
+                  variant="subtle"
+                  size="sm"
+                />
+              </td>
+            </tr>
+            <tr class="border-t-2 border-default bg-muted font-semibold">
+              <td colspan="3" class="px-4 py-3">Total estimated taxes paid</td>
+              <td class="px-4 py-3 text-right tabular-nums">{{ formatCurrency(totalPaid) }}</td>
+              <td colspan="3" />
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </template>
+  </UCollapsible>
 </template>

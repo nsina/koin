@@ -341,12 +341,7 @@ function print() {
 
     <!-- Schedule C Lines view -->
     <div v-else class="space-y-4">
-      <UCard>
-        <template #header>
-          <h3 class="font-semibold">
-            Schedule C Summary — Tax Year {{ taxRange.from.slice(0, 4) }}
-          </h3>
-        </template>
+      <UCard :title="`Schedule C Summary — Tax Year ${taxRange.from.slice(0, 4)}`">
         <div class="overflow-x-auto">
           <table class="min-w-full">
             <thead>

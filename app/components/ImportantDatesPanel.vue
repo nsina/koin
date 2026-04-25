@@ -64,8 +64,8 @@ const datesWithDaysUntil = computed(() =>
 </script>
 
 <template>
-  <div>
-    <button class="flex w-full items-center justify-between py-2 text-left" @click="open = !open">
+  <UCollapsible v-model:open="open">
+    <button class="flex w-full items-center justify-between py-2 text-left">
       <span class="font-semibold">Important Tax Dates</span>
       <UIcon
         :name="open ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
@@ -73,39 +73,41 @@ const datesWithDaysUntil = computed(() =>
       />
     </button>
 
-    <div v-if="open" class="mt-3 overflow-x-auto rounded-xl border border-default">
-      <table class="min-w-full">
-        <thead>
-          <tr class="table-header-row">
-            <th class="px-4 py-3">Date</th>
-            <th class="px-4 py-3">Event</th>
-            <th class="px-4 py-3">Note</th>
-            <th class="px-4 py-3 text-center">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="(item, i) in datesWithDaysUntil"
-            :key="i"
-            class="border-b border-muted last:border-0"
-            :class="{ 'opacity-40': item.daysUntil < 0 }"
-          >
-            <td class="px-4 py-3 font-medium tabular-nums">{{ formatDateLong(item.date) }}</td>
-            <td class="px-4 py-3">{{ item.event }}</td>
-            <td class="px-4 py-3 text-sm text-muted">{{ item.note }}</td>
-            <td class="px-4 py-3 text-center">
-              <UBadge
-                v-if="item.daysUntil >= 0 && item.daysUntil <= 30"
-                label="Coming up"
-                color="warning"
-                variant="subtle"
-                size="sm"
-              />
-              <span v-else-if="item.daysUntil < 0" class="text-xs text-dimmed">Past</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+    <template #content>
+      <div class="mt-3 overflow-x-auto rounded-xl border border-default">
+        <table class="min-w-full">
+          <thead>
+            <tr class="table-header-row">
+              <th class="px-4 py-3">Date</th>
+              <th class="px-4 py-3">Event</th>
+              <th class="px-4 py-3">Note</th>
+              <th class="px-4 py-3 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(item, i) in datesWithDaysUntil"
+              :key="i"
+              class="border-b border-muted last:border-0"
+              :class="{ 'opacity-40': item.daysUntil < 0 }"
+            >
+              <td class="px-4 py-3 font-medium tabular-nums">{{ formatDateLong(item.date) }}</td>
+              <td class="px-4 py-3">{{ item.event }}</td>
+              <td class="px-4 py-3 text-sm text-muted">{{ item.note }}</td>
+              <td class="px-4 py-3 text-center">
+                <UBadge
+                  v-if="item.daysUntil >= 0 && item.daysUntil <= 30"
+                  label="Coming up"
+                  color="warning"
+                  variant="subtle"
+                  size="sm"
+                />
+                <span v-else-if="item.daysUntil < 0" class="text-xs text-dimmed">Past</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </template>
+  </UCollapsible>
 </template>
