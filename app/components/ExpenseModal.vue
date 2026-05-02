@@ -42,7 +42,7 @@ async function submitQuickCreate() {
       email: null,
       w9Received: false,
       notes: '',
-      is1099Exempt: false
+      is1099Exempt: false,
     })
     draft.contractorId = created.id
     quickCreateOpen.value = false
@@ -54,7 +54,7 @@ async function submitQuickCreate() {
 const SPECIAL_CATEGORY_ICONS: Record<string, string> = {
   'Contractors & Freelancers': 'i-lucide-user-check',
   'Equipment & Hardware': 'i-lucide-monitor',
-  'Meals & Coffee (Business)': 'i-lucide-utensils'
+  'Meals & Coffee (Business)': 'i-lucide-utensils',
 }
 
 const categoryItems: SelectMenuItem[] = [
@@ -62,19 +62,19 @@ const categoryItems: SelectMenuItem[] = [
   ...TAX_CATEGORIES.filter((c) => c.name in SPECIAL_CATEGORY_ICONS).map((c) => ({
     label: c.name,
     value: c.name,
-    icon: SPECIAL_CATEGORY_ICONS[c.name]
+    icon: SPECIAL_CATEGORY_ICONS[c.name],
   })),
   { type: 'separator' },
   ...TAX_CATEGORIES.filter((c) => !(c.name in SPECIAL_CATEGORY_ICONS)).map((c) => ({
     label: c.name,
-    value: c.name
-  }))
+    value: c.name,
+  })),
 ]
 const paymentMethodItems = PAYMENT_METHODS
 
 const contractorItems = computed(() => [
   { label: 'None', value: null },
-  ...contractors.value.map((c) => ({ label: c.name, value: c.id }))
+  ...contractors.value.map((c) => ({ label: c.name, value: c.id })),
 ])
 
 const pendingFiles = ref<File[] | null>(null)
@@ -99,7 +99,7 @@ function makeDraft(): ExpenseDraft {
       businessUsePct: props.expense.businessUsePct,
       isRecurring: false,
       recurringFrequency: 'monthly',
-      recurringAutoAdd: false
+      recurringAutoAdd: false,
     }
   }
   const category = TAX_CATEGORIES[0]!.name
@@ -120,7 +120,7 @@ function makeDraft(): ExpenseDraft {
     businessUsePct: 100,
     isRecurring: false,
     recurringFrequency: 'monthly',
-    recurringAutoAdd: false
+    recurringAutoAdd: false,
   }
 }
 
@@ -141,7 +141,7 @@ watch(
       nextTick(() => descriptionRef.value?.autoResize())
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 watch(pendingFiles, async (files) => {
@@ -152,7 +152,7 @@ watch(pendingFiles, async (files) => {
     for (const file of files) form.append('files', file)
     const blobs = await $fetch<{ pathname: string }[]>('/api/receipts/upload', {
       method: 'POST',
-      body: form
+      body: form,
     })
     for (const b of blobs) draft.receiptKeys.push(b.pathname)
     pendingFiles.value = null
@@ -178,7 +178,7 @@ watch(
     if (cat?.specialHandling !== 'contractor') {
       draft.contractorId = null
     }
-  }
+  },
 )
 
 watch(
@@ -189,7 +189,7 @@ watch(
     } else if (draft.deductiblePct === 0) {
       draft.deductiblePct = getTaxDefaultsForCategory(draft.category).deductiblePct
     }
-  }
+  },
 )
 
 // Auto-disable Section 179 when business use is 50% or less (IRS requires >50%)
@@ -197,7 +197,7 @@ watch(
   () => draft.businessUsePct,
   (pct) => {
     if (pct <= 50) draft.section179 = false
-  }
+  },
 )
 
 // Smart sync: selecting a contractor can seed an empty vendor field.
@@ -210,7 +210,7 @@ watch(
     if (selected) {
       draft.vendor = selected.name
     }
-  }
+  },
 )
 
 // Smart sync: exact vendor name match auto-links a contractor.
@@ -223,21 +223,21 @@ watch(
     if (!normalizedVendor) return
 
     const exactMatch = contractors.value.find(
-      (contractor) => normalizeName(contractor.name) === normalizedVendor
+      (contractor) => normalizeName(contractor.name) === normalizedVendor,
     )
 
     if (exactMatch && draft.contractorId !== exactMatch.id) {
       draft.contractorId = exactMatch.id
     }
-  }
+  },
 )
 
 const currentTaxCategory = computed(() => findTaxCategoryByName(draft.category))
 const isEquipmentCategory = computed(
-  () => currentTaxCategory.value?.specialHandling === 'equipment'
+  () => currentTaxCategory.value?.specialHandling === 'equipment',
 )
 const isContractorCategory = computed(
-  () => currentTaxCategory.value?.specialHandling === 'contractor'
+  () => currentTaxCategory.value?.specialHandling === 'contractor',
 )
 const isDeductiblePctLocked = computed(() => currentTaxCategory.value?.isLocked ?? false)
 
@@ -250,7 +250,7 @@ const hintConfig = computed(() => {
     return {
       color: 'warning' as const,
       icon: 'i-lucide-triangle-alert',
-      text: hint.slice(2).trim()
+      text: hint.slice(2).trim(),
     }
   return { color: 'neutral' as const, icon: 'i-lucide-info', text: hint }
 })
@@ -287,7 +287,7 @@ async function submit() {
       nextDueDate: advanceDate(draft.date, draft.recurringFrequency),
       endDate: null,
       autoAdd: draft.recurringAutoAdd,
-      active: true
+      active: true,
     })
     toast.add({ title: 'Recurring template created', color: 'success' })
   }
@@ -332,7 +332,7 @@ async function submit() {
               :decrement="false"
               :format-options="{
                 minimumFractionDigits: 2,
-                maximumFractionDigits: 2
+                maximumFractionDigits: 2,
               }"
               class="w-full"
             />

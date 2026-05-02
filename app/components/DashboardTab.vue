@@ -10,7 +10,7 @@ onMounted(() => {
 
 // ── Spend by Category ─────────────────────────────────────────────────────────
 const categoryChartCategories = {
-  total: { name: 'Spend', color: 'var(--color-indigo-500)' }
+  total: { name: 'Spend', color: 'var(--color-indigo-500)' },
 }
 
 // ── Top 5 Vendors ─────────────────────────────────────────────────────────────
@@ -19,7 +19,7 @@ const vendorPalette = [
   'var(--color-cyan-400)',
   'var(--color-emerald-500)',
   'var(--color-amber-500)',
-  'var(--color-rose-500)'
+  'var(--color-rose-500)',
 ]
 
 const topVendorDonutCategories = computed(() =>
@@ -28,19 +28,19 @@ const topVendorDonutCategories = computed(() =>
       // Use vendor name as key — cleaner tooltips per the docs best practice
       acc[item.vendor] = {
         name: item.vendor,
-        color: vendorPalette[i % vendorPalette.length] ?? 'var(--color-indigo-500)'
+        color: vendorPalette[i % vendorPalette.length] ?? 'var(--color-indigo-500)',
       }
       return acc
     },
-    {}
-  )
+    {},
+  ),
 )
 
 const topVendorDonutData = computed(() => store.topVendorsYtd.value.map((v) => v.total))
 
 // ── Monthly Spend Trend ───────────────────────────────────────────────────────
 const monthlyChartCategories = {
-  total: { name: 'Monthly Spend', color: 'var(--color-indigo-500)' }
+  total: { name: 'Monthly Spend', color: 'var(--color-indigo-500)' },
 }
 
 // Only show months up to (and including) the current month — no future zeros
@@ -84,17 +84,17 @@ const monthsElapsed = computed(() => (now.value ? now.value.getMonth() + 1 : 0))
 const avgMonthlySpend = computed(() =>
   store.ytdSpend.value > 0 && monthsElapsed.value > 0
     ? round2(store.ytdSpend.value / monthsElapsed.value)
-    : 0
+    : 0,
 )
 
 const deductiblePct = computed(() =>
   store.ytdSpend.value > 0
     ? Math.round((store.ytdTaxDeductible.value / store.ytdSpend.value) * 100)
-    : 0
+    : 0,
 )
 
 const billablePct = computed(() =>
-  store.ytdSpend.value > 0 ? Math.round((store.ytdBillable.value / store.ytdSpend.value) * 100) : 0
+  store.ytdSpend.value > 0 ? Math.round((store.ytdBillable.value / store.ytdSpend.value) * 100) : 0,
 )
 
 const currentMonthName = computed(() => now.value?.toLocaleString('en-US', { month: 'long' }) ?? '')

@@ -15,7 +15,7 @@ const BUSINESS_TYPE_LABELS: Record<string, string> = {
   individual: 'Individual',
   single_member_llc: 'Single-member LLC',
   partnership: 'Partnership',
-  corporation: 'Corporation'
+  corporation: 'Corporation',
 }
 
 const rows = computed(() => {
@@ -41,7 +41,7 @@ const rows = computed(() => {
             : 'Needs W-9'
           : (spendMap.get(c.id) ?? 0) >= 500
             ? 'Collect W-9'
-            : 'Monitor'
+            : 'Monitor',
     }))
     .filter((r) => r.ytdPaid > 0 || contractors.value.length > 0)
 })
@@ -53,7 +53,7 @@ function exportCsv() {
     'YTD Paid',
     'W-9 Received',
     '1099 Required',
-    'Status'
+    'Status',
   ]
   const data = rows.value.map((r) => [
     r.contractor.name,
@@ -61,7 +61,7 @@ function exportCsv() {
     r.ytdPaid.toFixed(2),
     r.contractor.w9Received ? 'Yes' : 'No',
     r.contractor.is1099Exempt ? 'Exempt' : r.requires1099 ? 'Yes' : 'No',
-    r.status
+    r.status,
   ])
   const csv =
     [headers, ...data].map((line) => line.map(escapeCsv).join(',')).join('\n') +

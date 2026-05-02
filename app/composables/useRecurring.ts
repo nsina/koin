@@ -41,7 +41,7 @@ function sanitizeTemplate(raw: unknown): RecurringTemplate | null {
     endDate: v.endDate ? String(v.endDate) : v.end_date ? String(v.end_date) : null,
     autoAdd: Boolean(v.autoAdd ?? v.auto_add),
     active: v.active === undefined ? true : Boolean(v.active),
-    createdAt: String(v.createdAt ?? v.created_at ?? new Date().toISOString())
+    createdAt: String(v.createdAt ?? v.created_at ?? new Date().toISOString()),
   }
 }
 
@@ -83,7 +83,7 @@ export function useRecurring() {
         t.active &&
         t.autoAdd &&
         t.nextDueDate <= today &&
-        (!t.endDate || t.nextDueDate <= t.endDate)
+        (!t.endDate || t.nextDueDate <= t.endDate),
     )
     for (const t of toProcess) {
       await store.addExpense({
@@ -102,7 +102,7 @@ export function useRecurring() {
         businessUsePct: 100,
         isRecurring: false,
         recurringFrequency: 'monthly',
-        recurringAutoAdd: false
+        recurringAutoAdd: false,
       })
       const nextDate = advanceDate(t.nextDueDate, t.frequency)
       await updateTemplate(t.id, { nextDueDate: nextDate })
@@ -111,7 +111,7 @@ export function useRecurring() {
     if (count > 0) {
       toast.add({
         title: `${count} recurring expense${count !== 1 ? 's' : ''} added automatically`,
-        color: 'success'
+        color: 'success',
       })
     }
     return count
@@ -129,6 +129,6 @@ export function useRecurring() {
     updateTemplate,
     deleteTemplate,
     processAutoAdd,
-    dueToday
+    dueToday,
   }
 }

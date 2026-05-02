@@ -84,7 +84,7 @@ export const VENDOR_CATEGORY_RULES: Record<string, string[]> = {
     'granola',
     'cleanshot',
     'paddle',
-    'mtw'
+    'mtw',
   ],
   'Advertising & Marketing': [
     'meta',
@@ -94,7 +94,7 @@ export const VENDOR_CATEGORY_RULES: Record<string, string[]> = {
     'x ads',
     'mailchimp',
     'hubspot',
-    'sticker mule'
+    'sticker mule',
   ],
   'Platform Fees & Commissions': ['stripe fee', 'paypal fee', 'gumroad', 'lemon squeezy'],
   'Contractors & Freelancers': [
@@ -104,7 +104,7 @@ export const VENDOR_CATEGORY_RULES: Record<string, string[]> = {
     'freelancer',
     'send money',
     'gusto',
-    'deel'
+    'deel',
   ],
   'Equipment & Hardware': ['apple', 'dell', 'bestbuy', 'amazon', 'newegg', 'b&h', 'adorama'],
   'Business Insurance': ['hiscox', 'next insurance', 'embroker', 'coalition'],
@@ -115,13 +115,13 @@ export const VENDOR_CATEGORY_RULES: Record<string, string[]> = {
     'bookkeeper',
     'accounting',
     'mcpherson',
-    'law'
+    'law',
   ],
   'Office Supplies': ['staples', 'office depot', 'officemax'],
   'Meals & Coffee (Business)': ['uber eats', 'doordash', 'grubhub', 'restaurant', 'cafe'],
   'Travel & Lodging': ['uber', 'lyft', 'airbnb', 'hilton', 'delta', 'united', 'southwest'],
   'Phone & Internet': ['verizon', 'att', 't-mobile', 'comcast', 'xfinity'],
-  'Bank & Wire Fees': ['stripe fee', 'wire fee', 'monthly fee', 'bank fee']
+  'Bank & Wire Fees': ['stripe fee', 'wire fee', 'monthly fee', 'bank fee'],
 }
 
 // ─── Singleton state (module-level — shared across all composable usages) ─────
@@ -147,7 +147,7 @@ export function useExpenseStore() {
     return {
       taxDeductible: match.defaultPct > 0,
       deductiblePct: match.defaultPct,
-      deductiblePctLocked: match.isLocked
+      deductiblePctLocked: match.isLocked,
     }
   }
 
@@ -165,7 +165,7 @@ export function useExpenseStore() {
       (e) =>
         e.date === date &&
         e.vendor.toLowerCase().trim() === vendor.toLowerCase().trim() &&
-        Math.abs(e.amount - amount) < 0.01
+        Math.abs(e.amount - amount) < 0.01,
     )
   }
 
@@ -180,7 +180,7 @@ export function useExpenseStore() {
     const deductiblePct = clamp(
       Number(v.deductiblePct ?? v.deductible_pct ?? defaults.deductiblePct),
       0,
-      100
+      100,
     )
     const paymentMethod =
       typeof v.paymentMethod === 'string' && PAYMENT_METHODS.includes(v.paymentMethod)
@@ -227,7 +227,7 @@ export function useExpenseStore() {
             ? v.business_use_pct
             : 100,
       createdAt: String(v.createdAt ?? v.created_at ?? new Date().toISOString()),
-      updatedAt: String(v.updatedAt ?? v.updated_at ?? new Date().toISOString())
+      updatedAt: String(v.updatedAt ?? v.updated_at ?? new Date().toISOString()),
     }
   }
 
@@ -242,7 +242,7 @@ export function useExpenseStore() {
       to: String(v.to ?? v.to_location ?? '').trim(),
       miles: Number.isFinite(miles) ? round2(Math.max(miles, 0)) : 0,
       purpose: String(v.purpose ?? ''),
-      createdAt: String(v.createdAt ?? v.created_at ?? new Date().toISOString())
+      createdAt: String(v.createdAt ?? v.created_at ?? new Date().toISOString()),
     }
   }
 
@@ -252,7 +252,7 @@ export function useExpenseStore() {
     _clientNow.value = new Date()
     const [expensesData, mileageData] = await Promise.all([
       $fetch<unknown[]>('/api/expenses'),
-      $fetch<unknown[]>('/api/mileage')
+      $fetch<unknown[]>('/api/mileage'),
     ])
     expenses.value = expensesData.map(sanitizeExpense).filter(Boolean) as Expense[]
     mileageTrips.value = mileageData.map(sanitizeMileage).filter(Boolean) as MileageTrip[]
@@ -280,7 +280,7 @@ export function useExpenseStore() {
       businessUsePct: draft.businessUsePct,
       receipts: draft.receiptKeys,
       createdAt: nowISO,
-      updatedAt: nowISO
+      updatedAt: nowISO,
     }
     await $fetch('/api/expenses', { method: 'POST', body: row })
     expenses.value.unshift(row)
@@ -309,11 +309,11 @@ export function useExpenseStore() {
       businessUsePct: draft.businessUsePct,
       receipts: draft.receiptKeys,
       createdAt: prev.createdAt,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     }
     await $fetch(`/api/expenses/${id}`, {
       method: 'PUT',
-      body: updated
+      body: updated,
     })
     expenses.value[index] = updated
     toast.add({ title: 'Expense updated', color: 'success' })
@@ -332,13 +332,13 @@ export function useExpenseStore() {
     expenses.value = expenses.value.filter((e) => !idSet.has(e.id))
     toast.add({
       title: `${ids.length} expense${ids.length !== 1 ? 's' : ''} deleted`,
-      color: 'success'
+      color: 'success',
     })
   }
 
   async function bulkUpdateExpenses(
     ids: string[],
-    patch: Partial<Pick<Expense, 'clientBillable' | 'taxDeductible' | 'category'>>
+    patch: Partial<Pick<Expense, 'clientBillable' | 'taxDeductible' | 'category'>>,
   ) {
     if (ids.length === 0) return
     await $fetch('/api/expenses/bulk', { method: 'POST', body: { action: 'update', ids, patch } })
@@ -349,7 +349,7 @@ export function useExpenseStore() {
     }
     toast.add({
       title: `${ids.length} expense${ids.length !== 1 ? 's' : ''} updated`,
-      color: 'success'
+      color: 'success',
     })
   }
 
@@ -359,7 +359,7 @@ export function useExpenseStore() {
     const updated = [...expense.receipts, pathname]
     await $fetch(`/api/expenses/${expenseId}`, {
       method: 'PUT',
-      body: { receipts: updated }
+      body: { receipts: updated },
     })
     expense.receipts = updated
   }
@@ -370,20 +370,20 @@ export function useExpenseStore() {
       ...row,
       id: generateId(),
       createdAt: nowISO,
-      updatedAt: nowISO
+      updatedAt: nowISO,
     }))
     await $fetch('/api/expenses/bulk', {
       method: 'POST',
       body: {
         action: 'insert',
-        rows: imported
-      }
+        rows: imported,
+      },
     })
     expenses.value = [...imported, ...expenses.value]
     toast.add({
       title: 'Import complete',
       description: `${imported.length} expenses imported.`,
-      color: 'success'
+      color: 'success',
     })
   }
 
@@ -403,7 +403,7 @@ export function useExpenseStore() {
       to: draft.to.trim(),
       miles: round2(draft.miles),
       purpose: draft.purpose.trim() || 'Business',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     }
     await $fetch('/api/mileage', { method: 'POST', body: trip })
     mileageTrips.value.unshift(trip)
@@ -423,12 +423,12 @@ export function useExpenseStore() {
       version: 2,
       exportedAt: new Date().toISOString(),
       expenses: expenses.value,
-      mileageTrips: mileageTrips.value
+      mileageTrips: mileageTrips.value,
     }
     downloadFile(
       `koin-backup-${getTodayISO()}.json`,
       JSON.stringify(payload, null, 2),
-      'application/json'
+      'application/json',
     )
     toast.add({ title: 'Backup exported', color: 'success' })
   }
@@ -447,7 +447,7 @@ export function useExpenseStore() {
       if (allIds.length > 0) {
         await $fetch('/api/expenses/bulk', {
           method: 'POST',
-          body: { action: 'delete', ids: allIds }
+          body: { action: 'delete', ids: allIds },
         })
       }
       for (const trip of mileageTrips.value) {
@@ -458,8 +458,8 @@ export function useExpenseStore() {
           method: 'POST',
           body: {
             action: 'insert',
-            rows: restoredExpenses
-          }
+            rows: restoredExpenses,
+          },
         })
       }
       for (const trip of restoredMileage) {
@@ -470,13 +470,13 @@ export function useExpenseStore() {
       toast.add({
         title: 'Restore complete',
         description: `${restoredExpenses.length} expenses and ${restoredMileage.length} trips loaded.`,
-        color: 'success'
+        color: 'success',
       })
     } catch {
       toast.add({
         title: 'Restore failed',
         description: 'Could not parse backup file.',
-        color: 'error'
+        color: 'error',
       })
     }
   }
@@ -488,7 +488,7 @@ export function useExpenseStore() {
     if (!now) return 0
     return expenses.value.reduce(
       (sum, e) => sum + (isDateInCurrentMonth(e.date, now) ? e.amount : 0),
-      0
+      0,
     )
   })
   const ytdSpend = computed(() => {
@@ -496,7 +496,7 @@ export function useExpenseStore() {
     if (!now) return 0
     return expenses.value.reduce(
       (sum, e) => sum + (isDateInCurrentYear(e.date, now) ? e.amount : 0),
-      0
+      0,
     )
   })
   const ytdTaxDeductible = computed(() => {
@@ -542,15 +542,15 @@ export function useExpenseStore() {
   })
   const vendorSuggestions = computed(() =>
     [...new Set(expenses.value.map((e) => e.vendor).filter(Boolean))].sort((a, b) =>
-      a.localeCompare(b)
-    )
+      a.localeCompare(b),
+    ),
   )
   const totalMilesYtd = computed(() => {
     const now = _clientNow.value
     if (!now) return 0
     return mileageTrips.value.reduce(
       (sum, t) => sum + (isDateInCurrentYear(t.date, now) ? t.miles : 0),
-      0
+      0,
     )
   })
   const { irsRatePerMile } = useSettings()
@@ -561,7 +561,7 @@ export function useExpenseStore() {
     const currentYear = now.getFullYear()
     const months = Array.from({ length: 12 }, (_, i) => ({
       month: new Date(currentYear, i, 1).toLocaleString('en-US', { month: 'short' }),
-      total: 0
+      total: 0,
     }))
     for (const e of expenses.value) {
       if (!isDateInCurrentYear(e.date, now)) continue
@@ -605,6 +605,6 @@ export function useExpenseStore() {
     // Helpers exposed for components
     getTaxDefaultsForCategory,
     getNetDeductible,
-    hasDuplicateExpense
+    hasDuplicateExpense,
   }
 }

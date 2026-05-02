@@ -36,6 +36,6 @@ export function useSettings() {
     fiscalYearStart,
     mercuryApiToken,
     loadSettings,
-    saveSetting
+    saveSetting,
   }
 }

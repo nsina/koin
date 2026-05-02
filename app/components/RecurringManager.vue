@@ -40,7 +40,7 @@ function makeDraft() {
     nextDueDate: editingTemplate.value?.nextDueDate ?? getTodayISO(),
     endDate: editingTemplate.value?.endDate ?? null,
     autoAdd: editingTemplate.value?.autoAdd ?? false,
-    active: editingTemplate.value?.active ?? true
+    active: editingTemplate.value?.active ?? true,
   }
 }
 
@@ -90,7 +90,7 @@ async function submit() {
 async function remove(t: RecurringTemplate) {
   const ok = await confirm({
     title: `Delete recurring template for ${t.vendor}?`,
-    description: 'This will not delete previously auto-added expenses.'
+    description: 'This will not delete previously auto-added expenses.',
   })
   if (ok) deleteTemplate(t.id)
 }
@@ -112,7 +112,7 @@ watch(
       openNew()
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 </script>
 

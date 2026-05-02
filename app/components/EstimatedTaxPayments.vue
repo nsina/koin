@@ -18,7 +18,7 @@ onMounted(async () => {
     { quarter: 'Q1', dueDate: `${year}-04-15` },
     { quarter: 'Q2', dueDate: `${year}-06-15` },
     { quarter: 'Q3', dueDate: `${year}-09-15` },
-    { quarter: 'Q4', dueDate: `${year + 1}-01-15` }
+    { quarter: 'Q4', dueDate: `${year + 1}-01-15` },
   ]
   const rows = await $fetch<TaxPayment[]>(`/api/estimated-taxes?year=${year}`)
   if (rows.length === 0) {
@@ -33,8 +33,8 @@ onMounted(async () => {
           dueDate: q.dueDate,
           amountPaid: null,
           datePaid: null,
-          confirmationNumber: ''
-        }
+          confirmationNumber: '',
+        },
       })
       payments.value.push(created)
     }

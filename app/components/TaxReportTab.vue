@@ -24,13 +24,13 @@ const viewMode = ref<'app' | 'scheduleC'>('app')
 
 const viewItems = [
   { label: 'App Categories', value: 'app' },
-  { label: 'Schedule C Lines', value: 'scheduleC' }
+  { label: 'Schedule C Lines', value: 'scheduleC' },
 ]
 
 const deductibleExpenses = computed(() =>
   store.expenses.value
     .filter((e) => e.taxDeductible && isDateWithinRange(e.date, taxRange.from, taxRange.to))
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
 )
 
 const mileageDeductionInRange = computed(() =>
@@ -38,12 +38,12 @@ const mileageDeductionInRange = computed(() =>
     store.mileageTrips.value.reduce((sum, t) => {
       if (!isDateWithinRange(t.date, taxRange.from, taxRange.to)) return sum
       return sum + t.miles * irsRatePerMile.value
-    }, 0)
-  )
+    }, 0),
+  ),
 )
 
 const expenseTotal = computed(() =>
-  deductibleExpenses.value.reduce((sum, e) => sum + store.getNetDeductible(e), 0)
+  deductibleExpenses.value.reduce((sum, e) => sum + store.getNetDeductible(e), 0),
 )
 
 const grandTotal = computed(() => round2(expenseTotal.value + mileageDeductionInRange.value))
@@ -88,7 +88,7 @@ const scheduleCGroups = computed(() => {
         founderCategories: [],
         founderCategorySet: new Set<string>(),
         expenses: [],
-        subtotal: 0
+        subtotal: 0,
       })
     }
   }
@@ -105,13 +105,14 @@ const scheduleCGroups = computed(() => {
 
   return lineOrder
     .filter(
-      (line) => map.has(line) && (map.get(line)!.subtotal > 0 || map.get(line)!.expenses.length > 0)
+      (line) =>
+        map.has(line) && (map.get(line)!.subtotal > 0 || map.get(line)!.expenses.length > 0),
     )
     .map((line) => {
       const group = map.get(line)!
       return {
         ...group,
-        founderCategories: Array.from(group.founderCategorySet)
+        founderCategories: Array.from(group.founderCategorySet),
       }
     })
 })
@@ -122,11 +123,11 @@ const section179Expenses = computed(() =>
     (e) =>
       findTaxCategoryByName(e.category)?.specialHandling === 'equipment' &&
       e.section179 &&
-      e.businessUsePct > 50
-  )
+      e.businessUsePct > 50,
+  ),
 )
 const section179Total = computed(() =>
-  round2(section179Expenses.value.reduce((sum, e) => sum + store.getNetDeductible(e), 0))
+  round2(section179Expenses.value.reduce((sum, e) => sum + store.getNetDeductible(e), 0)),
 )
 
 // Expenses where section179 is set but businessUsePct <= 50 — IRS non-compliant
@@ -135,16 +136,16 @@ const s179ExcludedExpenses = computed(() =>
     (e) =>
       findTaxCategoryByName(e.category)?.specialHandling === 'equipment' &&
       e.section179 &&
-      e.businessUsePct <= 50
-  )
+      e.businessUsePct <= 50,
+  ),
 )
 
 // Subtotal driven by Schedule C group sums (excludes non-scheduled categories like Owner's Draw)
 const scheduleCSubtotal = computed(() =>
-  round2(scheduleCGroups.value.reduce((sum, g) => sum + g.subtotal, 0))
+  round2(scheduleCGroups.value.reduce((sum, g) => sum + g.subtotal, 0)),
 )
 const scheduleCGrandTotal = computed(() =>
-  round2(scheduleCSubtotal.value + mileageDeductionInRange.value)
+  round2(scheduleCSubtotal.value + mileageDeductionInRange.value),
 )
 
 function exportCsv() {
@@ -156,7 +157,7 @@ function exportCsv() {
       'Category',
       'Amount',
       'Ded. %',
-      'Net Deductible'
+      'Net Deductible',
     ]
     const rows: string[][] = []
     for (const group of scheduleCGroups.value) {
@@ -168,7 +169,7 @@ function exportCsv() {
           e.category,
           e.amount.toFixed(2),
           e.deductiblePct.toFixed(0),
-          store.getNetDeductible(e).toFixed(2)
+          store.getNetDeductible(e).toFixed(2),
         ])
       }
     }
@@ -180,14 +181,14 @@ function exportCsv() {
         'Vehicle/Mileage',
         mileageDeductionInRange.value.toFixed(2),
         '100',
-        mileageDeductionInRange.value.toFixed(2)
+        mileageDeductionInRange.value.toFixed(2),
       ])
     }
     const csv = [headers, ...rows].map((line) => line.map(escapeCsv).join(',')).join('\n')
     downloadFile(
       `schedule-c-report-${taxRange.from}-to-${taxRange.to}.csv`,
       csv,
-      'text/csv;charset=utf-8;'
+      'text/csv;charset=utf-8;',
     )
   } else {
     const headers = ['Date', 'Vendor', 'Category', 'Amount', 'Ded. %', 'Net Deductible', 'Receipt']
@@ -198,7 +199,7 @@ function exportCsv() {
       e.amount.toFixed(2),
       e.deductiblePct.toFixed(0),
       store.getNetDeductible(e).toFixed(2),
-      e.receipts.length > 0 ? 'Y' : 'N'
+      e.receipts.length > 0 ? 'Y' : 'N',
     ])
     if (mileageDeductionInRange.value > 0) {
       rows.push([
@@ -208,14 +209,14 @@ function exportCsv() {
         mileageDeductionInRange.value.toFixed(2),
         '100',
         mileageDeductionInRange.value.toFixed(2),
-        'N'
+        'N',
       ])
     }
     const csv = [headers, ...rows].map((line) => line.map(escapeCsv).join(',')).join('\n')
     downloadFile(
       `tax-report-${taxRange.from}-to-${taxRange.to}.csv`,
       csv,
-      'text/csv;charset=utf-8;'
+      'text/csv;charset=utf-8;',
     )
   }
 }

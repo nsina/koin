@@ -30,7 +30,7 @@ async function onQuickFileChange(event: Event) {
     form.append('files', file)
     const blobs = await $fetch<{ pathname: string }[]>('/api/receipts/upload', {
       method: 'POST',
-      body: form
+      body: form,
     })
     if (blobs[0]) await store.attachReceipt(quickUploadExpense.value.id, blobs[0].pathname)
   } catch {
@@ -62,7 +62,7 @@ const filters = reactive({
   billable: 'all',
   deductible: 'all',
   from: '',
-  to: ''
+  to: '',
 })
 
 const categoryListboxItems = TAX_CATEGORIES.map((c) => ({ label: c.name, value: c.name }))
@@ -115,35 +115,35 @@ const datePresetOptions = computed(() => [
   { label: 'This month', value: 'this-month' },
   {
     label: _qYear.value ? `This quarter (Q${_qNum.value} ${_qYear.value})` : 'This quarter',
-    value: 'this-quarter'
+    value: 'this-quarter',
   },
   {
     label: _qYear.value ? `This year (${_qYear.value})` : 'This year',
-    value: 'this-year'
+    value: 'this-year',
   },
   { label: 'Last month', value: 'last-month' },
   {
     label: _lqYear.value ? `Last quarter (Q${_lqNum.value} ${_lqYear.value})` : 'Last quarter',
-    value: 'last-quarter'
+    value: 'last-quarter',
   },
   {
     label: _qYear.value ? `Last year (${_qYear.value - 1})` : 'Last year',
-    value: 'last-year'
+    value: 'last-year',
   },
   { label: 'All time', value: 'all-time' },
-  { label: 'Custom...', value: 'custom' }
+  { label: 'Custom...', value: 'custom' },
 ])
 
 // ── Filter options ────────────────────────────────────────────────────────────
 
 const paymentMethodFilterItems = [
   { label: 'All methods', value: 'all' },
-  ...PAYMENT_METHODS.map((m) => ({ label: m, value: m }))
+  ...PAYMENT_METHODS.map((m) => ({ label: m, value: m })),
 ]
 const boolFilterItems = [
   { label: 'All', value: 'all' },
   { label: 'Yes', value: 'yes' },
-  { label: 'No', value: 'no' }
+  { label: 'No', value: 'no' },
 ]
 const categoryNames = TAX_CATEGORIES.map((c) => c.name)
 
@@ -168,7 +168,7 @@ const filteredExpenses = computed(() => {
 const filteredTotal = computed(() => filteredExpenses.value.reduce((sum, e) => sum + e.amount, 0))
 
 const selectedExpenses = computed(() =>
-  filteredExpenses.value.filter((e) => rowSelection.value[e.id])
+  filteredExpenses.value.filter((e) => rowSelection.value[e.id]),
 )
 
 const selectedTotal = computed(() => selectedExpenses.value.reduce((sum, e) => sum + e.amount, 0))
@@ -206,7 +206,7 @@ const hasRecurringDue = computed(() => dueToday.value.length > 0)
 
 // Red dot + banner: contractor crossed $600 but W-9 not yet collected
 const contractorsNeedingW9 = computed(() =>
-  contractors.value.filter((c) => !c.is1099Exempt && getYtdSpend(c.id) >= 600 && !c.w9Received)
+  contractors.value.filter((c) => !c.is1099Exempt && getYtdSpend(c.id) >= 600 && !c.w9Received),
 )
 const hasContractorAlert = computed(() => contractorsNeedingW9.value.length > 0)
 const showThresholdBanner = computed(() => {
@@ -231,7 +231,7 @@ function sortHeader(label: string) {
             : 'i-lucide-arrow-up-down',
       trailing: true,
       class: '-mx-2.5',
-      onClick: () => column.toggleSorting()
+      onClick: () => column.toggleSorting(),
     })
 }
 
@@ -253,7 +253,7 @@ const CATEGORY_BADGE_COLORS: Record<string, BadgeColor> = {
   'Contractors & Freelancers': 'success',
   "Owner's Draw / Personal Transfer": 'error',
   'Advertising & Marketing': 'primary',
-  'Education & Courses': 'primary'
+  'Education & Courses': 'primary',
 }
 
 // ── Column definitions ────────────────────────────────────────────────────────
@@ -269,23 +269,23 @@ const columns: ColumnDef<Expense>[] = [
         modelValue: table.getIsAllPageRowsSelected(),
         indeterminate: table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected(),
         'onUpdate:modelValue': (val: boolean) => table.toggleAllPageRowsSelected(val),
-        'aria-label': 'Select all'
+        'aria-label': 'Select all',
       }),
     cell: ({ row }) =>
       h(UCheckbox, {
         modelValue: row.getIsSelected(),
         disabled: !row.getCanSelect(),
         'onUpdate:modelValue': (val: boolean) => row.toggleSelected(val),
-        'aria-label': 'Select row'
+        'aria-label': 'Select row',
       }),
     enableSorting: false,
-    meta: { class: { th: 'w-10 align-middle', td: 'w-10 align-middle' } }
+    meta: { class: { th: 'w-10 align-middle', td: 'w-10 align-middle' } },
   },
   {
     accessorKey: 'date',
     header: sortHeader('Date'),
     cell: ({ row }) =>
-      h('span', { class: 'font-medium tabular-nums' }, formatDateLong(row.getValue('date')))
+      h('span', { class: 'font-medium tabular-nums' }, formatDateLong(row.getValue('date'))),
   },
   {
     accessorKey: 'vendor',
@@ -295,9 +295,9 @@ const columns: ColumnDef<Expense>[] = [
       const desc = row.original.description
       return h('div', [
         h('p', { class: 'font-semibold text-highlighted' }, vendor),
-        desc ? h('p', { class: 'max-w-sm truncate text-sm text-muted' }, desc) : null
+        desc ? h('p', { class: 'max-w-sm truncate text-sm text-muted' }, desc) : null,
       ])
-    }
+    },
   },
   {
     accessorKey: 'category',
@@ -307,9 +307,9 @@ const columns: ColumnDef<Expense>[] = [
       return h(UBadge, {
         label: category,
         variant: 'subtle',
-        color: (CATEGORY_BADGE_COLORS[category] ?? 'neutral') as BadgeColor
+        color: (CATEGORY_BADGE_COLORS[category] ?? 'neutral') as BadgeColor,
       })
-    }
+    },
   },
   {
     accessorKey: 'paymentMethod',
@@ -319,16 +319,16 @@ const columns: ColumnDef<Expense>[] = [
     meta: {
       class: {
         th: 'hidden xl:table-cell align-middle',
-        td: 'hidden xl:table-cell align-middle'
-      }
-    }
+        td: 'hidden xl:table-cell align-middle',
+      },
+    },
   },
   {
     accessorKey: 'amount',
     header: sortHeader('Amount'),
     cell: ({ row }) =>
       h('span', { class: 'font-semibold tabular-nums' }, formatCurrency(row.getValue('amount'))),
-    meta: { class: { th: 'text-right align-middle', td: 'text-right align-middle' } }
+    meta: { class: { th: 'text-right align-middle', td: 'text-right align-middle' } },
   },
   {
     id: 'taxDeductible',
@@ -345,7 +345,7 @@ const columns: ColumnDef<Expense>[] = [
 
       return h('div', { class: CENTERED_ICON_WRAPPER_CLASS }, [icon])
     },
-    meta: { class: { th: CENTERED_COLUMN_CLASS, td: CENTERED_COLUMN_CLASS } }
+    meta: { class: { th: CENTERED_COLUMN_CLASS, td: CENTERED_COLUMN_CLASS } },
   },
   {
     id: 'clientBillable',
@@ -356,11 +356,11 @@ const columns: ColumnDef<Expense>[] = [
       return h('div', { class: CENTERED_ICON_WRAPPER_CLASS }, [
         h(UIcon, {
           name: billable ? 'i-lucide-briefcase' : 'i-lucide-minus',
-          class: billable ? 'size-4 text-info' : 'size-4 text-dimmed'
-        })
+          class: billable ? 'size-4 text-info' : 'size-4 text-dimmed',
+        }),
       ])
     },
-    meta: { class: { th: CENTERED_COLUMN_CLASS, td: CENTERED_COLUMN_CLASS } }
+    meta: { class: { th: CENTERED_COLUMN_CLASS, td: CENTERED_COLUMN_CLASS } },
   },
   {
     id: 'attachment',
@@ -377,9 +377,9 @@ const columns: ColumnDef<Expense>[] = [
                 href: `/${receipts[0]}`,
                 target: '_blank',
                 class: 'inline-flex hover:opacity-70 transition-opacity',
-                'aria-label': 'Open receipt'
+                'aria-label': 'Open receipt',
               },
-              [h(UIcon, { name: 'i-lucide-receipt-text', class: 'size-4 text-success' })]
+              [h(UIcon, { name: 'i-lucide-receipt-text', class: 'size-4 text-success' })],
             )
           : receipts.length > 1
             ? h(UButton, {
@@ -388,7 +388,7 @@ const columns: ColumnDef<Expense>[] = [
                 variant: 'ghost',
                 size: 'sm',
                 'aria-label': `${receipts.length} receipts`,
-                onClick: () => openEdit(expense)
+                onClick: () => openEdit(expense),
               })
             : h(UButton, {
                 icon: 'i-lucide-circle-plus',
@@ -396,12 +396,12 @@ const columns: ColumnDef<Expense>[] = [
                 variant: 'ghost',
                 size: 'sm',
                 'aria-label': 'Attach receipt',
-                onClick: () => triggerQuickUpload(expense)
+                onClick: () => triggerQuickUpload(expense),
               })
 
       return h('div', { class: CENTERED_ICON_WRAPPER_CLASS }, [content])
     },
-    meta: { class: { th: CENTERED_COLUMN_CLASS, td: CENTERED_COLUMN_CLASS } }
+    meta: { class: { th: CENTERED_COLUMN_CLASS, td: CENTERED_COLUMN_CLASS } },
   },
   {
     id: 'actions',
@@ -421,12 +421,12 @@ const columns: ColumnDef<Expense>[] = [
                       window.open(
                         `https://mercury.com/transactions/${expense.mercuryTransactionId}`,
                         '_blank',
-                        'noopener,noreferrer'
+                        'noopener,noreferrer',
                       )
                     }
-                  }
-                }
-              ]
+                  },
+                },
+              ],
             ]
           : []
 
@@ -440,8 +440,8 @@ const columns: ColumnDef<Expense>[] = [
                 {
                   label: 'Edit',
                   icon: 'i-lucide-pencil',
-                  onSelect: () => openEdit(expense)
-                }
+                  onSelect: () => openEdit(expense),
+                },
               ],
               ...mercuryItem,
               [
@@ -450,17 +450,17 @@ const columns: ColumnDef<Expense>[] = [
                   icon: 'i-lucide-receipt',
                   onSelect: () =>
                     store.bulkUpdateExpenses([expense.id], {
-                      clientBillable: !expense.clientBillable
-                    })
+                      clientBillable: !expense.clientBillable,
+                    }),
                 },
                 {
                   label: 'Toggle Tax Deductible',
                   icon: 'i-lucide-landmark',
                   onSelect: () =>
                     store.bulkUpdateExpenses([expense.id], {
-                      taxDeductible: !expense.taxDeductible
-                    })
-                }
+                      taxDeductible: !expense.taxDeductible,
+                    }),
+                },
               ],
               [
                 {
@@ -470,13 +470,13 @@ const columns: ColumnDef<Expense>[] = [
                   onSelect: async () => {
                     const ok = await confirm({
                       title: `Delete expense for ${expense.vendor}?`,
-                      description: 'This action cannot be undone.'
+                      description: 'This action cannot be undone.',
                     })
                     if (ok) store.deleteExpense(expense)
-                  }
-                }
-              ]
-            ]
+                  },
+                },
+              ],
+            ],
           },
           {
             default: () =>
@@ -485,19 +485,19 @@ const columns: ColumnDef<Expense>[] = [
                 color: 'neutral',
                 variant: 'ghost',
                 size: 'sm',
-                'aria-label': 'Row actions'
-              })
-          }
-        )
+                'aria-label': 'Row actions',
+              }),
+          },
+        ),
       ])
     },
     meta: {
       class: {
         th: `w-12 no-print ${CENTERED_COLUMN_CLASS}`,
-        td: `w-12 no-print ${CENTERED_COLUMN_CLASS}`
-      }
-    }
-  }
+        td: `w-12 no-print ${CENTERED_COLUMN_CLASS}`,
+      },
+    },
+  },
 ]
 
 // ── Actions ───────────────────────────────────────────────────────────────────
@@ -508,7 +508,7 @@ function openNew() {
 }
 
 defineShortcuts({
-  n: () => openNew()
+  n: () => openNew(),
 })
 
 function openEdit(expense: Expense) {
@@ -537,7 +537,7 @@ function calendarDateToISO(date: DateValue): string {
 
 const customRangeValue = computed(() => ({
   start: isoToCalendarDate(filters.from),
-  end: isoToCalendarDate(filters.to)
+  end: isoToCalendarDate(filters.to),
 }))
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -574,7 +574,7 @@ async function deleteSelected() {
   const count = selectedIds.value.length
   const ok = await confirm({
     title: `Delete ${count} expense${count !== 1 ? 's' : ''}?`,
-    description: 'This action cannot be undone.'
+    description: 'This action cannot be undone.',
   })
   if (!ok) return
   store.bulkDeleteExpenses(selectedIds.value)
@@ -608,8 +608,8 @@ function setSelectedCategory(name: string) {
           label: 'Review',
           onClick: () => {
             recurringOpen = true
-          }
-        }
+          },
+        },
       ]"
       close
       @update:open="dueBannerDismissed = true"
@@ -628,8 +628,8 @@ function setSelectedCategory(name: string) {
           label: 'View Contractors',
           onClick: () => {
             contractorOpen = true
-          }
-        }
+          },
+        },
       ]"
       close
       @update:open="dismissThresholdBanner"
@@ -834,7 +834,7 @@ function setSelectedCategory(name: string) {
           thead: 'bg-elevated/50 border-b border-default',
           th: 'px-4 py-3 align-middle text-xs font-semibold uppercase tracking-wider text-muted',
           td: 'px-4 py-3 align-middle',
-          tr: 'hover:bg-elevated/50 transition-colors'
+          tr: 'hover:bg-elevated/50 transition-colors',
         }"
       />
 

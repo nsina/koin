@@ -7,19 +7,19 @@ const IMPORTANT_DATES = [
   {
     date: '2026-02-02',
     event: '1099-NEC due to recipients & IRS',
-    note: 'Jan 31 fell on Saturday'
+    note: 'Jan 31 fell on Saturday',
   },
   { date: '2026-02-02', event: 'W-2 forms due to employees & SSA', note: '' },
   { date: '2026-03-02', event: '1099-MISC paper filing due to IRS', note: '' },
   {
     date: '2026-03-16',
     event: 'S-Corp (1120-S) & Partnership (1065) returns due',
-    note: 'Mar 15 fell on Sunday'
+    note: 'Mar 15 fell on Sunday',
   },
   {
     date: '2026-03-16',
     event: 'Deadline to file S-Corp/Partnership extension (Form 7004)',
-    note: ''
+    note: '',
   },
   { date: '2026-03-31', event: '1099-MISC e-filing deadline with IRS', note: '' },
   { date: '2026-04-15', event: 'Individual return (Form 1040) due — Tax Year 2025', note: '' },
@@ -41,7 +41,7 @@ const IMPORTANT_DATES = [
   { date: '2027-04-15', event: 'Q1 2027 estimated tax due', note: 'Form 1040-ES' },
   { date: '2027-06-15', event: 'Q2 2027 estimated tax due', note: 'Form 1040-ES' },
   { date: '2027-09-15', event: 'Q3 2027 estimated tax due', note: 'Form 1040-ES' },
-  { date: '2027-10-15', event: 'Extended individual return deadline', note: '' }
+  { date: '2027-10-15', event: 'Extended individual return deadline', note: '' },
 ]
 
 const todayISO = ref('')
@@ -56,10 +56,10 @@ const datesWithDaysUntil = computed(() =>
       ? Math.ceil(
           (new Date(`${item.date}T12:00:00`).getTime() -
             new Date(`${todayISO.value}T12:00:00`).getTime()) /
-            (1000 * 60 * 60 * 24)
+            (1000 * 60 * 60 * 24),
         )
-      : 0
-  }))
+      : 0,
+  })),
 )
 </script>
 

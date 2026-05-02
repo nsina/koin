@@ -19,7 +19,7 @@ const BUSINESS_TYPES = [
   { label: 'Individual', value: 'individual' },
   { label: 'Single-member LLC', value: 'single_member_llc' },
   { label: 'Partnership', value: 'partnership' },
-  { label: 'Corporation', value: 'corporation' }
+  { label: 'Corporation', value: 'corporation' },
 ]
 
 function makeDraft() {
@@ -30,7 +30,7 @@ function makeDraft() {
     email: props.contractor?.email ?? '',
     w9Received: props.contractor?.w9Received ?? false,
     is1099Exempt: props.contractor?.is1099Exempt ?? false,
-    notes: props.contractor?.notes ?? ''
+    notes: props.contractor?.notes ?? '',
   }
 }
 
@@ -41,7 +41,7 @@ watch(
   () => {
     Object.assign(draft, makeDraft())
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 // Auto-set 1099 exempt for corporations
@@ -49,7 +49,7 @@ watch(
   () => draft.businessType,
   (type) => {
     draft.is1099Exempt = type === 'corporation'
-  }
+  },
 )
 
 async function submit() {
@@ -64,7 +64,7 @@ async function submit() {
     email: draft.email.trim() || null,
     w9Received: draft.w9Received,
     is1099Exempt: draft.is1099Exempt,
-    notes: draft.notes.trim()
+    notes: draft.notes.trim(),
   }
   if (props.contractor) {
     await updateContractor(props.contractor.id, payload)

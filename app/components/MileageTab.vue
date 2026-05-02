@@ -9,14 +9,14 @@ const draft = reactive({
   from: '',
   to: '',
   miles: 0,
-  purpose: 'Client meeting'
+  purpose: 'Client meeting',
 })
 
 function submit() {
   if (!draft.from.trim() || !draft.to.trim()) {
     toast.add({
       title: 'Start and end locations are required',
-      color: 'warning'
+      color: 'warning',
     })
     return
   }
@@ -35,7 +35,7 @@ function submit() {
 async function deleteTrip(trip: Parameters<typeof store.deleteMileageTrip>[0]) {
   const ok = await confirm({
     title: `Delete trip from ${trip.from} to ${trip.to}?`,
-    description: 'This action cannot be undone.'
+    description: 'This action cannot be undone.',
   })
   if (ok) store.deleteMileageTrip(trip)
 }

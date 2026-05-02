@@ -25,21 +25,21 @@ async function fetchFromApi() {
   syncing.value = true
   try {
     const transactions = await $fetch<MercuryApiTransaction[]>(`/api/mercury/transactions`, {
-      query: { start: syncStart.value, end: syncEnd.value }
+      query: { start: syncStart.value, end: syncEnd.value },
     })
     rows.value = mercuryApiToPreviewRows(transactions)
     if (rows.value.length === 0) {
       toast.add({
         title: 'No transactions found',
         description: 'Try a different date range.',
-        color: 'warning'
+        color: 'warning',
       })
       return
     }
     toast.add({
       title: 'Transactions fetched',
       description: `${rows.value.length} rows from Mercury API.`,
-      color: 'success'
+      color: 'success',
     })
   } catch (err: unknown) {
     const e = err as { statusCode?: number; data?: { statusMessage?: string } }
@@ -63,7 +63,7 @@ function onCategoryChange(row: MercuryPreviewRow, category: string) {
 }
 
 const transferCount = computed(
-  () => rows.value.filter((r) => r.isTransfer || r.direction === 'credit').length
+  () => rows.value.filter((r) => r.isTransfer || r.direction === 'credit').length,
 )
 const duplicateCount = computed(() => rows.value.filter((r) => r.duplicate).length)
 const selectedCount = computed(() => rows.value.filter((r) => r.selected).length)
@@ -78,14 +78,14 @@ async function onFilePicked(file: File | null | undefined) {
     toast.add({
       title: 'No rows parsed',
       description: 'Check that this is a Mercury CSV export.',
-      color: 'warning'
+      color: 'warning',
     })
     return
   }
   toast.add({
     title: 'CSV loaded',
     description: `${rows.value.length} rows parsed.`,
-    color: 'success'
+    color: 'success',
   })
 }
 

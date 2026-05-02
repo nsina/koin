@@ -26,7 +26,7 @@ const BUSINESS_TYPES = [
   { label: 'Individual', value: 'individual' },
   { label: 'Single-member LLC', value: 'single_member_llc' },
   { label: 'Partnership', value: 'partnership' },
-  { label: 'Corporation', value: 'corporation' }
+  { label: 'Corporation', value: 'corporation' },
 ]
 
 function makeDraft() {
@@ -38,7 +38,7 @@ function makeDraft() {
     email: editingContractor.value?.email ?? '',
     w9Received: editingContractor.value?.w9Received ?? false,
     is1099Exempt: editingContractor.value?.is1099Exempt ?? false,
-    notes: editingContractor.value?.notes ?? ''
+    notes: editingContractor.value?.notes ?? '',
   }
 }
 
@@ -53,7 +53,7 @@ watch(
   () => draft.businessType,
   (type) => {
     draft.is1099Exempt = type === 'corporation'
-  }
+  },
 )
 
 function openNew() {
@@ -91,7 +91,7 @@ async function submit() {
     email: draft.email.trim() || null,
     w9Received: draft.w9Received,
     is1099Exempt: draft.is1099Exempt,
-    notes: draft.notes.trim()
+    notes: draft.notes.trim(),
   }
   if (editingContractor.value) {
     await updateContractor(editingContractor.value.id, payload)
@@ -106,7 +106,7 @@ async function submit() {
 async function remove(c: Contractor) {
   const ok = await confirm({
     title: `Delete ${c.name}?`,
-    description: 'This will not delete linked expenses.'
+    description: 'This will not delete linked expenses.',
   })
   if (ok) deleteContractor(c.id)
 }
@@ -129,7 +129,7 @@ const BUSINESS_TYPE_LABELS: Record<string, string> = {
   individual: 'Individual',
   single_member_llc: 'Single-member LLC',
   partnership: 'Partnership',
-  corporation: 'Corporation'
+  corporation: 'Corporation',
 }
 
 const formDismissLabel = computed(() => (contractors.value.length === 0 ? 'Cancel' : 'Hide'))
@@ -147,7 +147,7 @@ watch(
       openNew()
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 </script>
 

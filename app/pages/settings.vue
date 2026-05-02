@@ -10,12 +10,12 @@ const {
   defaultPaymentMethod,
   fiscalYearStart,
   mercuryApiToken,
-  saveSetting
+  saveSetting,
 } = useSettings()
 const toast = useToast()
 const { confirm } = useConfirm()
 const {
-  public: { appVersion, appAuthor, appLicense, appDescription }
+  public: { appVersion, appAuthor, appLicense, appDescription },
 } = useRuntimeConfig()
 const currentYear = new Date().getFullYear()
 
@@ -91,7 +91,7 @@ async function restoreSelectedBackup() {
       'This will replace your current expenses and mileage trips with the selected backup file.',
     confirmLabel: 'Restore Backup',
     cancelLabel: 'Cancel',
-    color: 'error'
+    color: 'error',
   })
   if (!ok) return
 
@@ -126,7 +126,7 @@ const hasChanges = computed(
     draftRate.value !== irsRatePerMile.value ||
     draftPaymentMethod.value !== defaultPaymentMethod.value ||
     draftFiscalYearStart.value !== fiscalYearStart.value ||
-    draftMercuryToken.value !== mercuryApiToken.value
+    draftMercuryToken.value !== mercuryApiToken.value,
 )
 
 const canWipeAllData = computed(() => wipeConfirmText.value.trim() === 'DELETE')
@@ -137,7 +137,7 @@ async function goBack() {
       title: 'Discard unsaved changes?',
       description: 'Your changes will not be saved.',
       confirmLabel: 'Discard',
-      color: 'neutral'
+      color: 'neutral',
     })
     if (!ok) return
   }
@@ -152,7 +152,7 @@ async function saveAll() {
     saveSetting('fiscalYearStart', draftFiscalYearStart.value, true),
     ...(draftMercuryToken.value !== mercuryApiToken.value
       ? [saveSetting('mercury_api_token', draftMercuryToken.value, true)]
-      : [])
+      : []),
   ])
   toast.add({ title: 'Settings saved', color: 'success' })
   navigateTo('/')
@@ -170,7 +170,7 @@ async function wipeAllData() {
   try {
     await $fetch('/api/admin/wipe', {
       method: 'POST',
-      body: { confirmation: wipeConfirmText.value.trim() }
+      body: { confirmation: wipeConfirmText.value.trim() },
     })
 
     wipeModalOpen.value = false
@@ -180,7 +180,7 @@ async function wipeAllData() {
     toast.add({
       title: 'Wipe failed',
       description: 'Please confirm by typing DELETE and try again.',
-      color: 'error'
+      color: 'error',
     })
   } finally {
     wipingAllData.value = false

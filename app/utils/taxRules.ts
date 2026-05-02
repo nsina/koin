@@ -29,7 +29,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     scheduleCLine: 'Line 27b',
     defaultPct: 100,
     isLocked: false,
-    uiHint: 'SaaS tools, app subscriptions, cloud hosting (AWS/Vercel).'
+    uiHint: 'SaaS tools, app subscriptions, cloud hosting (AWS/Vercel).',
   },
   {
     name: 'Contractors & Freelancers',
@@ -39,14 +39,14 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     isLocked: false,
     specialHandling: 'contractor',
     legacyNames: ['Contractor / Freelancer'],
-    uiHint: 'Issue Form 1099-NEC if you pay them >= $600 this year.'
+    uiHint: 'Issue Form 1099-NEC if you pay them >= $600 this year.',
   },
   {
     name: 'Advertising & Marketing',
     irsName: 'Advertising',
     scheduleCLine: 'Line 8',
     defaultPct: 100,
-    isLocked: false
+    isLocked: false,
   },
   {
     name: 'Meals & Coffee (Business)',
@@ -55,7 +55,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     defaultPct: 50,
     isLocked: true,
     legacyNames: ['Meals & Entertainment'],
-    uiHint: '🔒 IRS limits business meals to 50% deductibility. (Entertainment is 0%).'
+    uiHint: '🔒 IRS limits business meals to 50% deductibility. (Entertainment is 0%).',
   },
   {
     name: 'Travel & Lodging',
@@ -64,7 +64,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     defaultPct: 100,
     isLocked: false,
     legacyNames: ['Business Travel'],
-    uiHint: 'Flights, hotels, Ubers on business trips (must be away from home overnight).'
+    uiHint: 'Flights, hotels, Ubers on business trips (must be away from home overnight).',
   },
 
   // Office and gear
@@ -76,7 +76,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     isLocked: false,
     specialHandling: 'equipment',
     legacyNames: ['Equipment & Technology'],
-    uiHint: 'Laptops, cameras, servers. Handled via Section 179 depreciation.'
+    uiHint: 'Laptops, cameras, servers. Handled via Section 179 depreciation.',
   },
   {
     name: 'Office Supplies',
@@ -84,7 +84,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     scheduleCLine: 'Line 18',
     defaultPct: 100,
     isLocked: false,
-    legacyNames: ['Office Expense']
+    legacyNames: ['Office Expense'],
   },
   {
     name: 'Office Rent & Coworking',
@@ -92,7 +92,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     scheduleCLine: 'Line 20b',
     defaultPct: 100,
     isLocked: false,
-    legacyNames: ['Rent / Coworking Space']
+    legacyNames: ['Rent / Coworking Space'],
   },
   {
     name: 'Phone & Internet',
@@ -100,7 +100,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     scheduleCLine: 'Line 25',
     defaultPct: null,
     isLocked: false,
-    uiHint: '⚠️ Deduct your actual business-use % (e.g., 70% of your cell bill).'
+    uiHint: '⚠️ Deduct your actual business-use % (e.g., 70% of your cell bill).',
   },
   {
     name: 'Home Office Deduction',
@@ -109,7 +109,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     defaultPct: 100,
     isLocked: false,
     legacyNames: ['Home Office'],
-    uiHint: '🏠 Deduct based on sq footage used exclusively for business.'
+    uiHint: '🏠 Deduct based on sq footage used exclusively for business.',
   },
 
   // Fees and services
@@ -120,7 +120,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     defaultPct: 100,
     isLocked: false,
     legacyNames: ['Commissions & Platform Fees'],
-    uiHint: 'Stripe, PayPal, Upwork, or App Store fees.'
+    uiHint: 'Stripe, PayPal, Upwork, or App Store fees.',
   },
   {
     name: 'Bank & Wire Fees',
@@ -128,7 +128,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     scheduleCLine: 'Line 27b',
     defaultPct: 100,
     isLocked: false,
-    legacyNames: ['Bank & Transaction Fees']
+    legacyNames: ['Bank & Transaction Fees'],
   },
   {
     name: 'Legal, CPA & Professional',
@@ -136,14 +136,14 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     scheduleCLine: 'Line 17',
     defaultPct: 100,
     isLocked: false,
-    legacyNames: ['Legal & Professional Services']
+    legacyNames: ['Legal & Professional Services'],
   },
   {
     name: 'Business Insurance',
     irsName: 'Insurance (other than health)',
     scheduleCLine: 'Line 15',
     defaultPct: 100,
-    isLocked: false
+    isLocked: false,
   },
   {
     name: 'Business Taxes & Licenses',
@@ -151,7 +151,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     scheduleCLine: 'Line 23',
     defaultPct: 100,
     isLocked: false,
-    uiHint: 'LLC fees, state franchise taxes, local licenses.'
+    uiHint: 'LLC fees, state franchise taxes, local licenses.',
   },
 
   // Misc business
@@ -162,7 +162,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     defaultPct: null,
     isLocked: false,
     legacyNames: ['Auto / Gas / Transit'],
-    uiHint: '⚠️ If you claim standard mileage, you cannot also deduct gas/repairs.'
+    uiHint: '⚠️ If you claim standard mileage, you cannot also deduct gas/repairs.',
   },
   {
     name: 'Education & Courses',
@@ -170,7 +170,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     scheduleCLine: 'Line 27b',
     defaultPct: 100,
     isLocked: false,
-    legacyNames: ['Education & Training']
+    legacyNames: ['Education & Training'],
   },
   {
     name: 'Client Gifts',
@@ -178,7 +178,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     scheduleCLine: 'Line 27b',
     defaultPct: 100,
     isLocked: false,
-    uiHint: '⚠️ IRS limits gifts to $25 per recipient per year.'
+    uiHint: '⚠️ IRS limits gifts to $25 per recipient per year.',
   },
   {
     name: 'Other / Misc Business',
@@ -186,7 +186,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     scheduleCLine: 'Line 27b',
     defaultPct: null,
     isLocked: false,
-    legacyNames: ['Other']
+    legacyNames: ['Other'],
   },
 
   // IRS hard locks (non-deductible or Schedule 1)
@@ -197,7 +197,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     defaultPct: 0,
     isLocked: true,
     legacyNames: ["Owner's Draw / Personal"],
-    uiHint: '🔒 Non-deductible. Taking cash out of your business is not an expense.'
+    uiHint: '🔒 Non-deductible. Taking cash out of your business is not an expense.',
   },
   {
     name: 'Fines & Parking Tickets',
@@ -206,7 +206,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     defaultPct: 0,
     isLocked: true,
     legacyNames: ['Fines & Penalties'],
-    uiHint: '🔒 IRS Code §162(f): Forbids deducting legal or parking fines.'
+    uiHint: '🔒 IRS Code §162(f): Forbids deducting legal or parking fines.',
   },
   {
     name: 'Owner Retirement (Solo 401k/SEP)',
@@ -215,7 +215,7 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     defaultPct: 100,
     isLocked: true,
     legacyNames: ['Owner Retirement (SEP/SIMPLE/Solo 401k)'],
-    uiHint: '🔒 Deducted on Form 1040 Schedule 1, not Schedule C.'
+    uiHint: '🔒 Deducted on Form 1040 Schedule 1, not Schedule C.',
   },
   {
     name: 'Health Insurance (Self-Employed)',
@@ -224,8 +224,8 @@ export const TAX_CATEGORIES: TaxCategory[] = [
     defaultPct: 100,
     isLocked: true,
     legacyNames: ['Self-Employed Health Insurance'],
-    uiHint: '🔒 Deducted on Form 1040 Schedule 1, not Schedule C.'
-  }
+    uiHint: '🔒 Deducted on Form 1040 Schedule 1, not Schedule C.',
+  },
 ]
 
 export function findTaxCategoryByName(name: string) {

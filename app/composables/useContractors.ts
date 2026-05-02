@@ -19,7 +19,7 @@ function sanitizeContractor(raw: unknown): Contractor | null {
     id: String(v.id ?? ''),
     name: String(v.name ?? ''),
     businessType: (['individual', 'single_member_llc', 'partnership', 'corporation'].includes(
-      String(v.businessType ?? v.business_type)
+      String(v.businessType ?? v.business_type),
     )
       ? (v.businessType ?? v.business_type)
       : 'individual') as Contractor['businessType'],
@@ -28,7 +28,7 @@ function sanitizeContractor(raw: unknown): Contractor | null {
     w9Received: Boolean(v.w9Received ?? v.w9_received),
     notes: String(v.notes ?? ''),
     is1099Exempt: Boolean(v.is1099Exempt ?? v.is_1099_exempt),
-    createdAt: String(v.createdAt ?? v.created_at ?? new Date().toISOString())
+    createdAt: String(v.createdAt ?? v.created_at ?? new Date().toISOString()),
   }
 }
 
@@ -45,7 +45,7 @@ export function useContractors() {
     const row = {
       ...draft,
       id: generateId(),
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     }
     const created = await $fetch<unknown>('/api/contractors', { method: 'POST', body: row })
     const c = sanitizeContractor(created) ?? sanitizeContractor(row)!
@@ -77,9 +77,10 @@ export function useContractors() {
       store.expenses.value
         .filter(
           (e) =>
-            e.contractorId === contractorId && new Date(`${e.date}T12:00:00`).getFullYear() === year
+            e.contractorId === contractorId &&
+            new Date(`${e.date}T12:00:00`).getFullYear() === year,
         )
-        .reduce((sum, e) => sum + e.amount, 0)
+        .reduce((sum, e) => sum + e.amount, 0),
     )
   }
 
@@ -89,6 +90,6 @@ export function useContractors() {
     addContractor,
     updateContractor,
     deleteContractor,
-    getYtdSpend
+    getYtdSpend,
   }
 }

@@ -3,7 +3,7 @@ export function formatCurrency(value: number) {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    maximumFractionDigits: 2,
   }).format(value)
 }
 
@@ -12,7 +12,7 @@ export function formatRate(value: number) {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 3,
-    maximumFractionDigits: 3
+    maximumFractionDigits: 3,
   }).format(value)
 }
 
@@ -20,14 +20,14 @@ export function formatDateLong(value: string) {
   return new Date(`${value}T12:00:00`).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
   })
 }
 
 export function formatDateShort(value: string) {
   return new Date(`${value}T12:00:00`).toLocaleDateString('en-US', {
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 
@@ -170,7 +170,7 @@ export function getQuarterInfo(preset: 'this' | 'last'): { q: number; year: numb
 
 export function advanceDate(
   isoDate: string,
-  frequency: 'monthly' | 'quarterly' | 'annually'
+  frequency: 'monthly' | 'quarterly' | 'annually',
 ): string {
   const d = new Date(`${isoDate}T12:00:00`)
   if (frequency === 'monthly') {

@@ -48,7 +48,7 @@ export interface MercuryApiTransaction {
 const TRANSFER_BANK_DESCRIPTIONS = [
   'transfer from mercury to another bank account',
   'transfer between your mercury accounts',
-  'acctverify' // Ally/Plaid micro-deposits for account verification
+  'acctverify', // Ally/Plaid micro-deposits for account verification
 ]
 
 // Mercury's built-in category names (exact strings from their UI) → our category names
@@ -73,7 +73,7 @@ const MERCURY_CATEGORY_MAP: Record<string, string> = {
   'Financing Proceeds': "Owner's Draw / Personal Transfer",
   'Interest Earned': 'Other / Misc Business',
   Transfer: "Owner's Draw / Personal Transfer",
-  Revenue: 'Other / Misc Business'
+  Revenue: 'Other / Misc Business',
 }
 
 // ─── Composable ───────────────────────────────────────────────────────────────
@@ -144,7 +144,7 @@ export function useMercuryImport() {
       const category = suggestCategory(
         vendor,
         rawDescription,
-        mercuryDetailedCategory || mercuryCategory
+        mercuryDetailedCategory || mercuryCategory,
       )
       const defaults = getTaxDefaultsForCategory(category)
       const duplicate = hasDuplicateExpense(date, vendor, amount)
@@ -171,7 +171,7 @@ export function useMercuryImport() {
         selected,
         trackingId,
         mercuryCategory,
-        mercuryTransactionId: null // CSV imports don't carry the Mercury transaction UUID
+        mercuryTransactionId: null, // CSV imports don't carry the Mercury transaction UUID
       })
     }
 
@@ -184,7 +184,7 @@ export function useMercuryImport() {
     direction: 'debit' | 'credit',
     bankDescription: string,
     mercuryCategory: string,
-    kind?: string
+    kind?: string,
   ): boolean {
     // API: transaction kind is the most reliable signal
     if (kind === 'internalTransfer' || kind === 'externalTransfer') return true
@@ -353,7 +353,7 @@ export function useMercuryImport() {
         selected,
         trackingId: tx.id,
         mercuryCategory,
-        mercuryTransactionId: tx.id
+        mercuryTransactionId: tx.id,
       })
     }
 
@@ -366,7 +366,7 @@ export function useMercuryImport() {
 // ─── Utility: build expense payload from selected preview rows ────────────────
 
 export function mercuryRowToExpense(
-  row: MercuryPreviewRow
+  row: MercuryPreviewRow,
 ): Omit<Expense, 'id' | 'createdAt' | 'updatedAt'> {
   return {
     date: row.date,
@@ -383,6 +383,6 @@ export function mercuryRowToExpense(
     mercuryTransactionId: row.mercuryTransactionId,
     contractorId: null,
     section179: false,
-    businessUsePct: 100
+    businessUsePct: 100,
   }
 }

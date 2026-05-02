@@ -20,8 +20,8 @@ useHead({
   meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
   link: [{ rel: 'icon', href: '/favicon.ico' }],
   htmlAttrs: {
-    lang: 'en'
-  }
+    lang: 'en',
+  },
 })
 
 const title = 'Koin'
@@ -34,7 +34,7 @@ useSeoMeta({
   ogDescription: description,
   ogImage: '/favicon.ico',
   twitterImage: '/favicon.ico',
-  twitterCard: 'summary_large_image'
+  twitterCard: 'summary_large_image',
 })
 </script>
 

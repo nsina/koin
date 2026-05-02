@@ -101,7 +101,7 @@ const weeks = computed(() => {
       inRange,
       isFuture,
       count: inRange ? (meta?.count ?? 0) : 0,
-      total: inRange ? (meta?.total ?? 0) : 0
+      total: inRange ? (meta?.total ?? 0) : 0,
     })
     cursor.setDate(cursor.getDate() + 1)
   }
@@ -154,7 +154,7 @@ const LEVEL_CLASSES = [
   { base: 'border-primary/30 bg-primary/12', hover: 'hover:border-primary/50' },
   { base: 'border-primary/50 bg-primary/30', hover: 'hover:border-primary/70' },
   { base: 'border-primary/70 bg-primary/55', hover: 'hover:border-primary/85' },
-  { base: 'border-primary/90 bg-primary/80', hover: 'hover:border-primary' }
+  { base: 'border-primary/90 bg-primary/80', hover: 'hover:border-primary' },
 ] as const
 
 // ── Selected day ──────────────────────────────────────────────────────────────
@@ -166,11 +166,11 @@ onMounted(() => {
 })
 
 const selectedDayExpenses = computed(() =>
-  store.expenses.value.filter((e) => e.date === selectedIso.value)
+  store.expenses.value.filter((e) => e.date === selectedIso.value),
 )
 
 const selectedDayTotal = computed(() =>
-  round2(selectedDayExpenses.value.reduce((sum, e) => sum + e.amount, 0))
+  round2(selectedDayExpenses.value.reduce((sum, e) => sum + e.amount, 0)),
 )
 
 const selectedDayLabel = computed(() => {
@@ -200,7 +200,7 @@ function tileClass(day: DayCell) {
   if (day.isFuture) {
     return [
       'border-default/40 bg-elevated/50 cursor-default',
-      isSelected && 'ring-1 ring-primary/50'
+      isSelected && 'ring-1 ring-primary/50',
     ]
       .filter(Boolean)
       .join(' ')

@@ -18,7 +18,7 @@ const emit = defineEmits<{
 const selectedCategory = ref('')
 
 const categoryItems = computed(() =>
-  props.categories.map((category) => ({ label: category, value: category }))
+  props.categories.map((category) => ({ label: category, value: category })),
 )
 
 watch(selectedCategory, (category) => {
@@ -33,14 +33,14 @@ const moreItems = [
     {
       label: 'Mark Not Billable',
       icon: 'i-lucide-file-x',
-      onSelect: () => emit('markNotBillable')
+      onSelect: () => emit('markNotBillable'),
     },
     {
       label: 'Mark Not Deductible',
       icon: 'i-lucide-ban',
-      onSelect: () => emit('markNotDeductible')
-    }
-  ]
+      onSelect: () => emit('markNotDeductible'),
+    },
+  ],
 ]
 </script>
 
@@ -49,7 +49,7 @@ const moreItems = [
     class="inline-flex max-w-full"
     :ui="{
       root: 'rounded-full border-2 border-default/20 bg-default/95 dark:bg-neutral-700/90 shadow-lg backdrop-blur supports-backdrop-filter:bg-default/90',
-      body: 'p-6 sm:px-6 sm:py-4'
+      body: 'p-6 sm:px-6 sm:py-4',
     }"
   >
     <div class="flex max-w-full flex-wrap items-center gap-3 sm:flex-nowrap">
