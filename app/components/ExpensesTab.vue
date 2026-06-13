@@ -649,7 +649,7 @@ function setSelectedCategory(name: string) {
         </template>
       </UButton>
 
-      <div class="mx-1 h-5 border-l border-default" />
+      <USeparator orientation="vertical" class="mx-1 h-5" />
 
       <UChip :show="hasRecurringDue" color="warning" size="sm" inset>
         <UButton

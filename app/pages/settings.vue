@@ -246,7 +246,7 @@ async function wipeAllData() {
               :ui="{ base: 'rounded-r-none' }"
             />
             <div
-              class="flex items-center rounded-r-md border border-l-0 border-neutral-300 bg-neutral-50 px-3 text-sm text-neutral-500 select-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400"
+              class="flex items-center rounded-r-md border border-l-0 border-default bg-elevated px-3 text-sm text-muted select-none"
             >
               $/mi
             </div>
