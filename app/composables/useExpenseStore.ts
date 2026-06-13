@@ -418,12 +418,24 @@ export function useExpenseStore() {
 
   // ── Backup / Restore ─────────────────────────────────────────────────────
 
-  function exportBackup() {
+  // Version 3 backups cover every SQLite-backed dataset. Earlier (v2) files
+  // only carry expenses + mileage; restore tolerates their missing keys.
+  async function exportBackup() {
+    // Pull the auxiliary datasets fresh from the API so the backup is complete
+    // even if the user never opened those tabs this session.
+    const [contractors, recurringTemplates, estimatedTaxPayments] = await Promise.all([
+      $fetch<unknown[]>('/api/contractors'),
+      $fetch<unknown[]>('/api/recurring'),
+      $fetch<unknown[]>('/api/estimated-taxes?year=all'),
+    ])
     const payload = {
-      version: 2,
+      version: 3,
       exportedAt: new Date().toISOString(),
       expenses: expenses.value,
       mileageTrips: mileageTrips.value,
+      contractors,
+      recurringTemplates,
+      estimatedTaxPayments,
     }
     downloadFile(
       `koin-backup-${getTodayISO()}.json`,
@@ -431,6 +443,26 @@ export function useExpenseStore() {
       'application/json',
     )
     toast.add({ title: 'Backup exported', color: 'success' })
+  }
+
+  // Delete every current row of an auxiliary dataset, then insert the restored
+  // rows. Each table is restored independently and skipped if the backup file
+  // (e.g. a legacy v2 file) does not include it.
+  async function restoreAuxDataset(
+    listUrl: string,
+    deleteUrl: (id: string) => string,
+    createUrl: string,
+    rows: unknown,
+  ): Promise<number> {
+    if (!Array.isArray(rows)) return -1 // sentinel: dataset absent from backup
+    const existing = await $fetch<Array<{ id: string }>>(listUrl)
+    for (const row of existing) {
+      await $fetch(deleteUrl(row.id), { method: 'DELETE' })
+    }
+    for (const row of rows) {
+      await $fetch(createUrl, { method: 'POST', body: row })
+    }
+    return rows.length
   }
 
   async function restoreBackup(file: File) {
@@ -467,9 +499,38 @@ export function useExpenseStore() {
       }
       expenses.value = restoredExpenses
       mileageTrips.value = restoredMileage
+
+      // Auxiliary datasets (v3+). Restored in place; absent in legacy backups.
+      const contractorCount = await restoreAuxDataset(
+        '/api/contractors',
+        (id) => `/api/contractors/${id}`,
+        '/api/contractors',
+        parsed.contractors,
+      )
+      const recurringCount = await restoreAuxDataset(
+        '/api/recurring',
+        (id) => `/api/recurring/${id}`,
+        '/api/recurring',
+        parsed.recurringTemplates,
+      )
+      const estimatedCount = await restoreAuxDataset(
+        '/api/estimated-taxes?year=all',
+        (id) => `/api/estimated-taxes/${id}`,
+        '/api/estimated-taxes',
+        parsed.estimatedTaxPayments,
+      )
+
+      // Refresh in-memory stores that own the restored auxiliary data.
+      if (contractorCount >= 0) await useContractors().loadContractors()
+      if (recurringCount >= 0) await useRecurring().loadRecurring()
+
+      const parts = [`${restoredExpenses.length} expenses`, `${restoredMileage.length} trips`]
+      if (contractorCount >= 0) parts.push(`${contractorCount} contractors`)
+      if (recurringCount >= 0) parts.push(`${recurringCount} recurring templates`)
+      if (estimatedCount >= 0) parts.push(`${estimatedCount} tax payments`)
       toast.add({
         title: 'Restore complete',
-        description: `${restoredExpenses.length} expenses and ${restoredMileage.length} trips loaded.`,
+        description: `${parts.join(', ')} loaded.`,
         color: 'success',
       })
     } catch {

@@ -314,7 +314,7 @@ async function submit() {
             <UInputMenu
               v-model="draft.vendor"
               :items="vendorSuggestions"
-              autocomplete
+              autocomplete="off"
               clear
               open-on-focus
               :content="{ hideWhenEmpty: true }"

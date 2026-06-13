@@ -88,7 +88,7 @@ async function restoreSelectedBackup() {
   const ok = await confirm({
     title: 'Restore backup and overwrite current data?',
     description:
-      'This will replace your current expenses and mileage trips with the selected backup file.',
+      'This replaces your current expenses, mileage, contractors, recurring templates, and estimated tax payments with the selected backup file.',
     confirmLabel: 'Restore Backup',
     cancelLabel: 'Cancel',
     color: 'error',
@@ -325,7 +325,9 @@ async function wipeAllData() {
 
       <div class="space-y-3">
         <p class="text-sm text-muted">
-          Export a backup JSON or restore from a previous backup file.
+          Export a full backup JSON (expenses, mileage, contractors, recurring templates, and
+          estimated tax payments) or restore from a previous backup file. Receipt files are not
+          included.
         </p>
         <div class="flex flex-wrap items-center gap-2">
           <UButton
