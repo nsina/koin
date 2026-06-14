@@ -313,6 +313,7 @@ async function submit() {
           <UFormField label="Vendor / Payee">
             <UInputMenu
               v-model="draft.vendor"
+              mode="autocomplete"
               :items="vendorSuggestions"
               autocomplete="off"
               clear
