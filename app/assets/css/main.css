@@ -12,6 +12,28 @@
   }
 }
 
+/* Roomier legends: nuxt-charts leaves --vis-legend-spacing undefined (gap collapses),
+   so define it here — adds space between legend items and their wrapped rows. */
+:root {
+  --vis-legend-spacing: 0.5rem 1.25rem;
+}
+
+/* Theme nuxt-charts (unovis) tooltips to match Nuxt UI surfaces — adapts to dark mode.
+   The chart provides the single card chrome; tooltip slot content only supplies layout. */
+.vis-tooltip {
+  --vis-tooltip-padding: 0;
+  --vis-tooltip-background-color: var(--ui-bg);
+  --vis-tooltip-border-color: var(--ui-border);
+  --vis-tooltip-border-radius: calc(var(--ui-radius) * 2);
+  --vis-tooltip-text-color: var(--ui-text-highlighted);
+  --vis-tooltip-title-color: var(--ui-text-muted);
+  --vis-tooltip-title-border-bottom: 1px solid var(--ui-border);
+  --vis-tooltip-label-color: var(--ui-text-muted);
+  --vis-tooltip-value-color: var(--ui-text-highlighted);
+  --vis-tooltip-box-shadow:
+    0 10px 25px -5px rgb(0 0 0 / 0.12), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
 @media print {
   .no-print {
     display: none !important;

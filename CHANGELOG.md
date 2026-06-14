@@ -49,11 +49,18 @@ Older years: _(none yet)_
 
 ### Added
 
+- **Dashboard — Monthly Spend** — converted to stacked gradient `AreaChart` (nuxt-charts) splitting deductible vs non-deductible per month (`getNetDeductible`); `MonotoneX` curve, `xExplicitTicks` index→month labels, themed tooltip with totals.
+- **Dashboard — Payment Methods** — new YTD donut (spend by `paymentMethod`); donut-on-top, legend below in narrow card.
+- **Dashboard — Cumulative Spend** — new YTD running-total `AreaChart` for budget pacing.
+- **ChartLegend** — reusable aligned donut legend (`dot · label · amount · %`) via fixed-width grid; used by Top Vendors + Payment Methods (`components/ChartLegend.vue`).
 - **Backup/restore** — full backup now covers contractors, recurring templates, and estimated tax payments alongside expenses + mileage (`exportBackup`/`restoreBackup` in `useExpenseStore`); payload `version` 2 → 3. Auxiliary datasets fetched fresh from API on export, restored in place via delete-all-then-insert (`restoreAuxDataset` helper) with post-restore store reload (`useContractors`/`useRecurring`). Legacy v2 files still restore — absent datasets detected and skipped; success toast itemizes restored counts.
 - **Estimated taxes API** — `DELETE /api/estimated-taxes/[id]` endpoint (enables restore to clear prior rows); `GET /api/estimated-taxes?year=all` (or no `year`) returns all payments for export, ordered by year then quarter.
 
 ### Changed
 
+- **Dashboard — Spend by Category** — replaced horizontal `BarChart` (rendered index labels `0,1,2…`) with ranked inline-bar list (name · amount · % of YTD, `bg-primary` bars).
+- **Dashboard — Top Vendors** — donut + side-by-side legend (`col-span-3`); built-in legend hidden for custom `ChartLegend` with full labels (`:title` hover fallback, no cropping).
+- **Dashboard — chart tooltips/legends** — themed via unovis CSS vars mapped to Nuxt UI tokens (`--vis-tooltip-*`, `--vis-legend-spacing` in `main.css`); single themed card, dark-mode aware.
 - **Settings — Data Management** — restore confirm dialog and helper copy state full dataset scope and note receipt files are excluded (`pages/settings.vue`).
 
 ### Fixed
