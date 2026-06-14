@@ -129,6 +129,14 @@ const hasChanges = computed(
     draftMercuryToken.value !== mercuryApiToken.value,
 )
 
+const fiscalYearStartError = computed(() => {
+  const value = draftFiscalYearStart.value?.trim()
+  if (!value) return 'Required — use MM-DD (e.g. 01-01).'
+  return /^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(value)
+    ? undefined
+    : 'Use MM-DD format, e.g. 01-01.'
+})
+
 const canWipeAllData = computed(() => wipeConfirmText.value.trim() === 'DELETE')
 
 async function goBack() {
@@ -145,6 +153,7 @@ async function goBack() {
 }
 
 async function saveAll() {
+  if (fiscalYearStartError.value) return
   await Promise.all([
     saveSetting('companyName', draftCompanyName.value, true),
     saveSetting('irsRatePerMile', String(draftRate.value), true),
@@ -207,7 +216,7 @@ async function wipeAllData() {
         label="Save"
         color="primary"
         variant="solid"
-        :disabled="!hasChanges"
+        :disabled="!hasChanges || !!fiscalYearStartError"
         @click="saveAll"
       />
     </template>
@@ -254,15 +263,21 @@ async function wipeAllData() {
         </UFormField>
 
         <UFormField label="Default Payment Method">
-          <USelectMenu v-model="draftPaymentMethod" :items="PAYMENT_METHODS" class="w-full" />
+          <USelect v-model="draftPaymentMethod" :items="PAYMENT_METHODS" class="w-full" />
         </UFormField>
 
         <UFormField
           label="Fiscal Year Start"
           hint="MM-DD"
           description="Determines the default date range in Tax Report. Use 01-01 for a calendar year."
+          :error="fiscalYearStartError"
         >
-          <UInput v-model="draftFiscalYearStart" placeholder="01-01" class="w-full" />
+          <UInput
+            v-model="draftFiscalYearStart"
+            placeholder="01-01"
+            class="w-full"
+            :color="fiscalYearStartError ? 'error' : undefined"
+          />
         </UFormField>
       </div>
 
