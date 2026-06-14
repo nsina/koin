@@ -1,56 +1,22 @@
 <script setup lang="ts">
+import type { ImportantTaxDate } from '~/utils/taxDates'
+
 const open = ref(true)
 
-const IMPORTANT_DATES = [
-  // Filing Year 2026 (for Tax Year 2025)
-  { date: '2026-01-15', event: 'Q4 2025 estimated tax due', note: 'Form 1040-ES' },
-  {
-    date: '2026-02-02',
-    event: '1099-NEC due to recipients & IRS',
-    note: 'Jan 31 fell on Saturday',
-  },
-  { date: '2026-02-02', event: 'W-2 forms due to employees & SSA', note: '' },
-  { date: '2026-03-02', event: '1099-MISC paper filing due to IRS', note: '' },
-  {
-    date: '2026-03-16',
-    event: 'S-Corp (1120-S) & Partnership (1065) returns due',
-    note: 'Mar 15 fell on Sunday',
-  },
-  {
-    date: '2026-03-16',
-    event: 'Deadline to file S-Corp/Partnership extension (Form 7004)',
-    note: '',
-  },
-  { date: '2026-03-31', event: '1099-MISC e-filing deadline with IRS', note: '' },
-  { date: '2026-04-15', event: 'Individual return (Form 1040) due — Tax Year 2025', note: '' },
-  { date: '2026-04-15', event: 'Q1 2026 estimated tax due', note: 'Form 1040-ES' },
-  { date: '2026-04-15', event: 'C-Corp (Form 1120) return due', note: '' },
-  { date: '2026-06-15', event: 'Q2 2026 estimated tax due', note: 'Form 1040-ES' },
-  { date: '2026-08-01', event: 'Max IRS penalty for late/unfiled 1099 corrections', note: '' },
-  { date: '2026-09-15', event: 'Q3 2026 estimated tax due', note: 'Form 1040-ES' },
-  { date: '2026-09-15', event: 'Extended S-Corp/Partnership return deadline', note: '' },
-  { date: '2026-10-15', event: 'Extended individual return deadline (Form 1040)', note: '' },
-  // Filing Year 2027 (for Tax Year 2026)
-  { date: '2027-01-15', event: 'Q4 2026 estimated tax due', note: 'Form 1040-ES' },
-  { date: '2027-02-01', event: '1099-NEC due to recipients & IRS', note: 'Jan 31 falls on Sunday' },
-  { date: '2027-02-01', event: 'W-2 forms due to employees & SSA', note: '' },
-  { date: '2027-03-01', event: '1099-MISC paper filing due to IRS', note: '' },
-  { date: '2027-03-15', event: 'S-Corp & Partnership returns due', note: '' },
-  { date: '2027-03-31', event: '1099-MISC e-filing deadline with IRS', note: '' },
-  { date: '2027-04-15', event: 'Individual return (Form 1040) due — Tax Year 2026', note: '' },
-  { date: '2027-04-15', event: 'Q1 2027 estimated tax due', note: 'Form 1040-ES' },
-  { date: '2027-06-15', event: 'Q2 2027 estimated tax due', note: 'Form 1040-ES' },
-  { date: '2027-09-15', event: 'Q3 2027 estimated tax due', note: 'Form 1040-ES' },
-  { date: '2027-10-15', event: 'Extended individual return deadline', note: '' },
-]
-
+// Deadlines are generated from IRS rules (with weekend/holiday roll-forward) rather than
+// hardcoded, so the panel stays accurate every year without manual edits. We surface the
+// current filing year plus the next so upcoming January deadlines are always visible.
 const todayISO = ref('')
+const importantDates = ref<ImportantTaxDate[]>([])
+
 onMounted(() => {
   todayISO.value = getTodayISO()
+  const year = new Date().getFullYear()
+  importantDates.value = getImportantTaxDates(year, year + 1)
 })
 
 const datesWithDaysUntil = computed(() =>
-  IMPORTANT_DATES.map((item) => ({
+  importantDates.value.map((item) => ({
     ...item,
     daysUntil: todayISO.value
       ? Math.ceil(

@@ -14,12 +14,8 @@ const payments = ref<TaxPayment[]>([])
 
 onMounted(async () => {
   const year = new Date().getFullYear()
-  const QUARTERLY_DUES = [
-    { quarter: 'Q1', dueDate: `${year}-04-15` },
-    { quarter: 'Q2', dueDate: `${year}-06-15` },
-    { quarter: 'Q3', dueDate: `${year}-09-15` },
-    { quarter: 'Q4', dueDate: `${year + 1}-01-15` },
-  ]
+  // Due dates roll forward off weekends/holidays — same generator the Important Dates panel uses.
+  const QUARTERLY_DUES = getEstimatedTaxDueDates(year)
   const rows = await $fetch<TaxPayment[]>(`/api/estimated-taxes?year=${year}`)
   if (rows.length === 0) {
     // Seed the 4 quarters

@@ -228,7 +228,7 @@ function tileClass(day: DayCell) {
 
     <div v-else class="flex flex-col lg:h-40 lg:flex-row lg:items-start lg:gap-6">
       <!-- ── Heatmap ── -->
-      <div class="no-scrollbar min-w-0 shrink-0 overflow-x-auto p-0.5">
+      <div class="min-w-0 shrink-0 scrollbar-none overflow-x-auto p-0.5">
         <div class="space-y-2" :style="{ width: `${DAY_LABEL_W + weeks.length * COL}px` }">
           <!-- Month labels (absolutely positioned, left values derived from weekIndex) -->
           <div class="relative h-4">
@@ -299,7 +299,7 @@ function tileClass(day: DayCell) {
         <p v-if="selectedDayExpenses.length === 0" class="mt-3 text-xs text-dimmed">No expenses</p>
         <UScrollArea
           v-else
-          class="mt-2 [scrollbar-color:--theme(--color-neutral-400/40%)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-neutral-400/30 [&::-webkit-scrollbar-track]:bg-transparent"
+          class="mt-2 scrollbar-thin scrollbar-thumb-neutral-400/40 scrollbar-track-transparent"
           :style="{ maxHeight: `${16 + 8 + CELL * 7 + GAP * 6 + 8 + 18 - 24}px` }"
         >
           <ul class="divide-y divide-default lg:pr-3">
