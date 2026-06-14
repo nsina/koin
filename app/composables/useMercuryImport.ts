@@ -51,19 +51,66 @@ const TRANSFER_BANK_DESCRIPTIONS = [
   'acctverify', // Ally/Plaid micro-deposits for account verification
 ]
 
-// Mercury's built-in category names (exact strings from their UI) → our category names
+// Mercury category names → our category names.
+// Two distinct vocabularies feed this map:
+//   1. The live API returns `mercuryCategory` as a fixed PascalCase enum
+//      (e.g. "Software", "Advertising"). Verified against
+//      https://docs.mercury.com/reference/listtransactions (MercuryCategory enum).
+//   2. The CSV export's "Mercury Category" / "Category" columns use Mercury's
+//      human-readable UI labels (e.g. "Marketing & Advertising").
+// Both are keyed here so API and CSV imports get the same Tier-1 categorization.
 const MERCURY_CATEGORY_MAP: Record<string, string> = {
+  // ── API `mercuryCategory` enum values ──
+  Software: 'Software & Subscriptions',
+  Memberships: 'Software & Subscriptions',
+  Advertising: 'Advertising & Marketing',
+  Legal: 'Legal, CPA & Professional',
+  ProfessionalServices: 'Legal, CPA & Professional',
+  Insurance: 'Business Insurance',
+  OfficeSupplies: 'Office Supplies',
+  Electronics: 'Equipment & Hardware',
+  Restaurants: 'Meals & Coffee (Business)',
+  FoodDelivery: 'Meals & Coffee (Business)',
+  AlcoholAndBars: 'Meals & Coffee (Business)',
+  Entertainment: 'Meals & Coffee (Business)',
+  Airlines: 'Travel & Lodging',
+  Lodging: 'Travel & Lodging',
+  CarRental: 'Travel & Lodging',
+  OtherTravel: 'Travel & Lodging',
+  GroundTransportation: 'Travel & Lodging',
+  RideshareAndTaxis: 'Travel & Lodging',
+  FuelAndGas: 'Vehicle & Gas',
+  VehicleExpenses: 'Vehicle & Gas',
+  Parking: 'Vehicle & Gas',
+  InternetAndTelephone: 'Phone & Internet',
+  Utilities: 'Office Rent & Coworking',
+  FacilitiesExpenses: 'Office Rent & Coworking',
+  Taxes: 'Business Taxes & Licenses',
+  GovernmentServices: 'Business Taxes & Licenses',
+  Fees: 'Bank & Wire Fees',
+  Education: 'Education & Courses',
+  Conferences: 'Education & Courses',
+  BooksAndNewspaper: 'Education & Courses',
+  // Personal/non-business-leaning enums default to misc; user reviews in preview
+  Charity: 'Other / Misc Business',
+  Medical: 'Other / Misc Business',
+  Shipping: 'Other / Misc Business',
+  Retail: 'Other / Misc Business',
+  Grocery: 'Other / Misc Business',
+  Clothing: 'Other / Misc Business',
+  Gambling: 'Other / Misc Business',
+  Political: 'Other / Misc Business',
+  Other: 'Other / Misc Business',
+
+  // ── CSV "Mercury Category" / "Category" display labels ──
   'Software & Subscriptions': 'Software & Subscriptions',
   'Marketing & Advertising': 'Advertising & Marketing',
   'Legal & Professional Services': 'Legal, CPA & Professional',
-  Insurance: 'Business Insurance',
   'Office Supplies & Equipment': 'Office Supplies',
   'Travel & Transportation': 'Travel & Lodging',
   'Payment Processing Fees': 'Platform Fees & Commissions',
   'Rent & Utilities': 'Office Rent & Coworking',
-  Entertainment: 'Meals & Coffee (Business)',
   Payroll: 'Contractors & Freelancers',
-  Taxes: 'Business Taxes & Licenses',
   COGS: 'Other / Misc Business',
   'Shipping & Postage': 'Other / Misc Business',
   'Employee Benefits': 'Other / Misc Business',
@@ -144,7 +191,8 @@ export function useMercuryImport() {
       const category = suggestCategory(
         vendor,
         rawDescription,
-        mercuryDetailedCategory || mercuryCategory,
+        mercuryDetailedCategory,
+        mercuryCategory,
       )
       const defaults = getTaxDefaultsForCategory(category)
       const duplicate = hasDuplicateExpense(date, vendor, amount)
@@ -187,7 +235,8 @@ export function useMercuryImport() {
     kind?: string,
   ): boolean {
     // API: transaction kind is the most reliable signal
-    if (kind === 'internalTransfer' || kind === 'externalTransfer') return true
+    if (kind === 'internalTransfer' || kind === 'externalTransfer' || kind === 'treasuryTransfer')
+      return true
 
     const lowerBank = bankDescription.toLowerCase()
     const lowerCat = mercuryCategory.toLowerCase()
@@ -206,13 +255,19 @@ export function useMercuryImport() {
     return false
   }
 
-  function suggestCategory(vendor: string, description: string, mercuryCategory: string): string {
-    // Use Mercury's detailed category if it maps to one of ours
-    if (mercuryCategory) {
-      const mapped = MERCURY_CATEGORY_MAP[mercuryCategory]
+  function suggestCategory(
+    vendor: string,
+    description: string,
+    ...categoryHints: string[]
+  ): string {
+    // Try each Mercury-provided category hint in priority order (e.g. a custom
+    // category name first, then the API enum). First hint that maps to one of
+    // our categories wins.
+    for (const hint of categoryHints) {
+      if (!hint) continue
+      const mapped = MERCURY_CATEGORY_MAP[hint]
       if (mapped) return mapped
-      // Direct match with our categories
-      const direct = findTaxCategoryByName(mercuryCategory)
+      const direct = findTaxCategoryByName(hint)
       if (direct) return direct.name
     }
 
@@ -299,7 +354,9 @@ export function useMercuryImport() {
     const result: MercuryPreviewRow[] = []
 
     for (const tx of transactions) {
-      if (tx.status === 'failed' || tx.status === 'cancelled') continue
+      // Server pre-filters to status=sent; guard defensively against any other
+      // status (pending, cancelled, failed, reversed, blocked) reaching here.
+      if (tx.status !== 'sent') continue
 
       const direction: 'debit' | 'credit' = tx.amount < 0 ? 'debit' : 'credit'
       const amount = Math.abs(tx.amount)
@@ -320,7 +377,8 @@ export function useMercuryImport() {
       if (!date) continue
 
       const vendor = inferVendor(rawName)
-      let category = suggestCategory(vendor, rawName, detailedCategory)
+      // Prefer the user's custom category name, then fall back to Mercury's enum.
+      let category = suggestCategory(vendor, rawName, tx.categoryData?.name || '', mercuryCategory)
       // Outgoing ACH payments that didn't match any known vendor are likely
       // contractor payments default to contractor category over generic "other"
       if (category === 'Other / Misc Business' && tx.kind === 'outgoingPayment') {
