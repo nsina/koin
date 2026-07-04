@@ -2,6 +2,7 @@
 import type {
   BillingCadence,
   Client,
+  ClientRevenueSummary,
   ClientService,
   ClientServiceStatus,
   ClientStatus,
@@ -14,8 +15,8 @@ const {
   deleteClient,
   deleteService,
   servicesForClient,
+  clientRevenueSummary,
   serviceForecastAmount,
-  monthlyRunRate,
   forecastMonths,
   monthlyForecast,
   currentMonthlyRevenue,
@@ -92,15 +93,30 @@ const filteredClients = computed(() => {
   })
 })
 
-function clientMonthlyRevenue(clientId: string) {
-  return servicesForClient(clientId)
-    .filter((service) => service.status === 'active')
-    .reduce((sum, service) => sum + monthlyRunRate(service), 0)
+// Each visible client paired with its committed/forecast rollup. Computing the
+// summaries once here keeps the template light and the totals consistent.
+const clientRows = computed(() =>
+  filteredClients.value.map((client) => ({
+    client,
+    revenue: clientRevenueSummary(client.id),
+  })),
+)
+
+const selectedClientSummary = computed(() =>
+  selectedClient.value ? clientRevenueSummary(selectedClient.value.id) : null,
+)
+
+const STATUS_DOT: Record<ClientStatus, string> = {
+  active: 'bg-success',
+  prospect: 'bg-warning',
+  paused: 'bg-neutral-400',
+  ended: 'bg-error',
 }
 
-const selectedClientRevenue = computed(() =>
-  selectedClient.value ? clientMonthlyRevenue(selectedClient.value.id) : 0,
-)
+function committedShare(summary: ClientRevenueSummary) {
+  if (summary.monthlyRunRate <= 0) return 0
+  return Math.round((summary.committedMonthly / summary.monthlyRunRate) * 100)
+}
 
 const timelineGridStyle = computed(() => ({
   gridTemplateColumns: 'minmax(15rem, 18rem) minmax(46rem, 1fr)',
@@ -298,7 +314,7 @@ async function removeService(service: ClientService) {
     <div class="grid items-start gap-4 xl:grid-cols-5">
       <UCard class="xl:col-span-2" :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
-          <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
             <h3 class="font-semibold">Clients</h3>
             <UBadge
               :label="
@@ -344,35 +360,74 @@ async function removeService(service: ClientService) {
         </div>
         <div v-else class="h-96 divide-y divide-muted overflow-y-auto">
           <button
-            v-for="client in filteredClients"
-            :key="client.id"
+            v-for="row in clientRows"
+            :key="row.client.id"
             type="button"
             class="flex w-full items-start justify-between gap-3 px-4 py-3 text-left transition hover:bg-elevated"
-            :class="{ 'bg-elevated': selectedClientId === client.id }"
-            @click="selectedClientId = client.id"
+            :class="{ 'bg-elevated': selectedClientId === row.client.id }"
+            @click="selectedClientId = row.client.id"
           >
-            <span class="min-w-0">
-              <span class="block truncate font-semibold">{{ client.name }}</span>
-              <span class="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
-                <UBadge
-                  :label="client.status"
-                  :color="STATUS_COLORS[client.status]"
-                  variant="subtle"
-                  size="sm"
-                  class="capitalize"
-                />
-                <span v-if="client.billingCode" class="font-mono text-muted">{{
-                  client.billingCode
-                }}</span>
-                <span
-                  >{{ servicesForClient(client.id).length }} service{{
-                    servicesForClient(client.id).length !== 1 ? 's' : ''
-                  }}</span
-                >
+            <span class="flex min-w-0 items-start gap-2.5">
+              <span
+                class="mt-1.5 size-2 shrink-0 rounded-full"
+                :class="STATUS_DOT[row.client.status]"
+                :title="row.client.status"
+              />
+              <span class="min-w-0">
+                <span class="flex items-center gap-1.5">
+                  <span class="truncate font-semibold">{{ row.client.name }}</span>
+                  <span
+                    v-if="row.client.billingCode"
+                    class="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] leading-none text-muted"
+                    >{{ row.client.billingCode }}</span
+                  >
+                </span>
+                <span class="mt-1 flex flex-wrap items-center gap-x-1.5 text-xs text-muted">
+                  <span class="capitalize">{{ row.client.status }}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>
+                    <template v-if="row.revenue.serviceCount > row.revenue.activeServiceCount">
+                      {{ row.revenue.activeServiceCount }}/{{ row.revenue.serviceCount }} active
+                    </template>
+                    <template v-else>
+                      {{ row.revenue.serviceCount }} service{{
+                        row.revenue.serviceCount !== 1 ? 's' : ''
+                      }}
+                    </template>
+                  </span>
+                </span>
               </span>
             </span>
-            <span class="shrink-0 text-sm font-semibold tabular-nums">
-              {{ formatCurrency(clientMonthlyRevenue(client.id)) }}
+            <span class="shrink-0 text-right">
+              <template v-if="row.revenue.monthlyRunRate > 0">
+                <span class="block text-sm font-semibold tabular-nums">
+                  {{ formatCurrency(row.revenue.monthlyRunRate)
+                  }}<span class="text-xs font-normal text-muted">/mo</span>
+                </span>
+                <span
+                  v-if="committedShare(row.revenue) >= 100"
+                  class="mt-0.5 flex items-center justify-end gap-1 text-[11px] font-medium text-primary"
+                >
+                  <UIcon name="i-lucide-lock-keyhole" class="size-3" />
+                  Committed
+                </span>
+                <span
+                  v-else-if="row.revenue.committedMonthly > 0"
+                  class="mt-0.5 block text-[11px] text-muted"
+                >
+                  {{ committedShare(row.revenue) }}% committed
+                </span>
+                <span v-else class="mt-0.5 block text-[11px] text-muted">Projected</span>
+              </template>
+              <template v-else-if="row.revenue.next12Total > 0">
+                <span class="block text-sm font-semibold tabular-nums">
+                  {{ formatCurrency(row.revenue.next12Total) }}
+                </span>
+                <span class="mt-0.5 block text-[11px] text-muted">next 12 mo</span>
+              </template>
+              <template v-else>
+                <span class="block text-sm text-dimmed">—</span>
+              </template>
             </span>
           </button>
         </div>
@@ -381,9 +436,17 @@ async function removeService(service: ClientService) {
       <UCard class="xl:col-span-3">
         <template #header>
           <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <div class="flex items-center gap-2">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
                 <h3 class="font-semibold">{{ selectedClient?.name ?? 'Client Detail' }}</h3>
+                <UBadge
+                  v-if="selectedClient"
+                  :label="selectedClient.status"
+                  :color="STATUS_COLORS[selectedClient.status]"
+                  variant="subtle"
+                  size="sm"
+                  class="capitalize"
+                />
                 <UBadge
                   v-if="selectedClient?.billingCode"
                   :label="selectedClient.billingCode"
@@ -393,7 +456,7 @@ async function removeService(service: ClientService) {
                   class="font-mono"
                 />
               </div>
-              <p v-if="selectedClient" class="text-xs text-muted">
+              <p v-if="selectedClient" class="mt-0.5 text-xs text-muted">
                 {{ selectedClient.contactName || selectedClient.email || 'No contact saved' }}
               </p>
             </div>
@@ -426,113 +489,138 @@ async function removeService(service: ClientService) {
         <div v-if="!selectedClient" class="py-12 text-center text-sm text-muted">
           Select or add a client.
         </div>
-        <div v-else class="space-y-4">
+        <div v-else class="space-y-6">
           <UCard variant="soft" :ui="{ body: 'p-0 sm:p-0' }">
-            <div class="grid grid-cols-3 divide-x divide-default">
-              <div class="px-4 py-3">
-                <p class="text-xs text-muted">Monthly Run Rate</p>
-                <p class="mt-1 text-xl font-semibold tabular-nums">
-                  {{ formatCurrency(selectedClientRevenue) }}
+            <div
+              class="grid grid-cols-1 divide-y divide-default sm:grid-cols-2 sm:divide-x sm:divide-y-0"
+            >
+              <div class="px-5 py-4">
+                <p class="text-xs font-medium tracking-wide text-muted uppercase">
+                  Monthly Run Rate
                 </p>
-              </div>
-              <div class="px-4 py-3">
-                <p class="text-xs text-muted">Services</p>
-                <p class="mt-1 text-xl font-semibold tabular-nums">
-                  {{ selectedClientServices.length }}
+                <p class="mt-1.5 text-2xl font-semibold tabular-nums">
+                  {{ formatCurrency(selectedClientSummary?.monthlyRunRate ?? 0) }}
                 </p>
+                <p
+                  v-if="selectedClientSummary && selectedClientSummary.monthlyRunRate > 0"
+                  class="mt-1 text-xs text-muted"
+                >
+                  <span class="font-medium text-primary">{{
+                    formatCurrency(selectedClientSummary.committedMonthly)
+                  }}</span>
+                  committed · {{ formatCurrency(selectedClientSummary.projectedMonthly) }} projected
+                </p>
+                <p v-else class="mt-1 text-xs text-dimmed">No active recurring revenue</p>
               </div>
-              <div class="px-4 py-3">
-                <p class="text-xs text-muted">Status</p>
-                <UBadge
-                  :label="selectedClient.status"
-                  :color="STATUS_COLORS[selectedClient.status]"
-                  variant="subtle"
-                  class="mt-1 capitalize"
-                />
+              <div class="px-5 py-4">
+                <p class="text-xs font-medium tracking-wide text-muted uppercase">
+                  12-Month Forecast
+                </p>
+                <p class="mt-1.5 text-2xl font-semibold tabular-nums">
+                  {{ formatCurrency(selectedClientSummary?.next12Total ?? 0) }}
+                </p>
+                <p class="mt-1 text-xs text-muted">Committed plus projected</p>
               </div>
             </div>
           </UCard>
 
-          <div
-            v-if="selectedClientServices.length === 0"
-            class="rounded-lg border border-dashed border-muted px-4 py-10 text-center text-sm text-muted"
-          >
-            No services for this client.
-          </div>
-          <div v-else class="overflow-x-auto rounded-lg border border-default">
-            <table class="min-w-full">
-              <thead>
-                <tr class="table-header-row">
-                  <th class="px-4 py-3 text-left">Service</th>
-                  <th class="px-4 py-3 text-right">Amount</th>
-                  <th class="px-4 py-3 text-left">Cadence</th>
-                  <th class="px-4 py-3 text-left">Dates</th>
-                  <th class="px-4 py-3 text-center">Status</th>
-                  <th class="px-4 py-3 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="service in selectedClientServices"
-                  :key="service.id"
-                  class="border-b border-muted last:border-0"
-                >
-                  <td class="px-4 py-3">
-                    <p class="font-semibold">{{ service.name }}</p>
-                    <p v-if="service.notes" class="max-w-xs truncate text-xs text-muted">
-                      {{ service.notes }}
-                    </p>
-                  </td>
-                  <td class="px-4 py-3 text-right font-semibold tabular-nums">
-                    {{ formatCurrency(serviceForecastAmount(service)) }}
-                    <p
-                      v-if="service.pricingModel === 'hourly'"
-                      class="text-xs font-normal text-muted"
-                    >
-                      {{ formatCurrency(service.hourlyRate ?? 0) }}/hr x
-                      {{ service.estimatedMonthlyHours ?? 0 }}h est.
-                    </p>
-                  </td>
-                  <td class="px-4 py-3 text-sm">{{ CADENCE_LABELS[service.billingCadence] }}</td>
-                  <td class="px-4 py-3 text-sm text-muted">
-                    {{ formatDateShort(service.startDate) }}
-                    <template v-if="service.endDate"
-                      >- {{ formatDateShort(service.endDate) }}</template
-                    >
-                    <p v-if="service.commitmentEndDate" class="text-xs text-primary">
-                      Committed through {{ formatDateShort(service.commitmentEndDate) }}
-                    </p>
-                  </td>
-                  <td class="px-4 py-3 text-center">
-                    <UBadge
-                      :label="service.status"
-                      :color="STATUS_COLORS[service.status]"
-                      variant="subtle"
-                      size="sm"
-                      class="capitalize"
-                    />
-                  </td>
-                  <td class="px-4 py-3 text-center">
-                    <div class="flex items-center justify-center gap-1">
-                      <UButton
-                        icon="i-lucide-pencil"
-                        color="neutral"
-                        variant="ghost"
+          <div>
+            <div class="mb-2 flex items-center justify-between gap-3">
+              <h4 class="text-sm font-semibold">
+                Services
+                <span class="font-normal text-muted">({{ selectedClientServices.length }})</span>
+              </h4>
+              <UButton
+                icon="i-lucide-plus"
+                label="Add service"
+                color="neutral"
+                variant="ghost"
+                size="xs"
+                @click="openNewService(selectedClient.id)"
+              />
+            </div>
+
+            <div
+              v-if="selectedClientServices.length === 0"
+              class="rounded-lg border border-dashed border-muted px-4 py-10 text-center text-sm text-muted"
+            >
+              No services for this client.
+            </div>
+            <div v-else class="overflow-x-auto rounded-lg border border-default">
+              <table class="min-w-full">
+                <thead>
+                  <tr class="table-header-row">
+                    <th class="px-4 py-3 text-left">Service</th>
+                    <th class="px-4 py-3 text-right">Amount</th>
+                    <th class="px-4 py-3 text-left">Cadence</th>
+                    <th class="px-4 py-3 text-left">Dates</th>
+                    <th class="px-4 py-3 text-center">Status</th>
+                    <th class="px-4 py-3 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="service in selectedClientServices"
+                    :key="service.id"
+                    class="border-b border-muted last:border-0"
+                  >
+                    <td class="px-4 py-3">
+                      <p class="font-semibold">{{ service.name }}</p>
+                      <p v-if="service.notes" class="max-w-xs truncate text-xs text-muted">
+                        {{ service.notes }}
+                      </p>
+                    </td>
+                    <td class="px-4 py-3 text-right font-semibold tabular-nums">
+                      {{ formatCurrency(serviceForecastAmount(service)) }}
+                      <p
+                        v-if="service.pricingModel === 'hourly'"
+                        class="text-xs font-normal text-muted"
+                      >
+                        {{ formatCurrency(service.hourlyRate ?? 0) }}/hr x
+                        {{ service.estimatedMonthlyHours ?? 0 }}h est.
+                      </p>
+                    </td>
+                    <td class="px-4 py-3 text-sm">{{ CADENCE_LABELS[service.billingCadence] }}</td>
+                    <td class="px-4 py-3 text-sm text-muted">
+                      {{ formatDateShort(service.startDate) }}
+                      <template v-if="service.endDate"
+                        >- {{ formatDateShort(service.endDate) }}</template
+                      >
+                      <p v-if="service.commitmentEndDate" class="text-xs text-primary">
+                        Committed through {{ formatDateShort(service.commitmentEndDate) }}
+                      </p>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                      <UBadge
+                        :label="service.status"
+                        :color="STATUS_COLORS[service.status]"
+                        variant="subtle"
                         size="sm"
-                        @click="openEditService(service)"
+                        class="capitalize"
                       />
-                      <UButton
-                        icon="i-lucide-trash-2"
-                        color="error"
-                        variant="ghost"
-                        size="sm"
-                        @click="removeService(service)"
-                      />
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                      <div class="flex items-center justify-center gap-1">
+                        <UButton
+                          icon="i-lucide-pencil"
+                          color="neutral"
+                          variant="ghost"
+                          size="sm"
+                          @click="openEditService(service)"
+                        />
+                        <UButton
+                          icon="i-lucide-trash-2"
+                          color="error"
+                          variant="ghost"
+                          size="sm"
+                          @click="removeService(service)"
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </UCard>

@@ -33,6 +33,15 @@ export interface ClientService {
   updatedAt: string
 }
 
+export interface ClientRevenueSummary {
+  monthlyRunRate: number
+  committedMonthly: number
+  projectedMonthly: number
+  next12Total: number
+  activeServiceCount: number
+  serviceCount: number
+}
+
 export interface RevenueForecastMonth {
   iso: string
   label: string
@@ -311,6 +320,42 @@ export function useClients() {
     })
   })
 
+  // Per-client rollup using the same active/committed rules as the global KPIs,
+  // so a client row's monthly figure sums to `currentMonthlyRevenue` and its
+  // committed split matches the forecast chart. `monthlyRunRate` reflects
+  // services actually billing this month (started, not ended); `next12Total`
+  // captures the full 12-month contribution including one-time spikes, so
+  // clients with only one-time or not-yet-started work still read as non-empty.
+  function clientRevenueSummary(clientId: string): ClientRevenueSummary {
+    const services = clientServices.value.filter((s) => s.clientId === clientId)
+    const month = forecastMonths.value[0]?.iso
+    let monthly = 0
+    let committed = 0
+    if (month) {
+      for (const service of services) {
+        if (!serviceActiveInMonth(service, month)) continue
+        const run = monthlyRunRate(service)
+        if (run === 0) continue
+        monthly = round2(monthly + run)
+        if (serviceIsCommittedInMonth(service, month)) committed = round2(committed + run)
+      }
+    }
+    let next12Total = 0
+    for (const m of forecastMonths.value) {
+      for (const service of services) {
+        next12Total = round2(next12Total + serviceRevenueInMonth(service, m.iso))
+      }
+    }
+    return {
+      monthlyRunRate: monthly,
+      committedMonthly: committed,
+      projectedMonthly: round2(monthly - committed),
+      next12Total,
+      activeServiceCount: services.filter((s) => s.status === 'active').length,
+      serviceCount: services.length,
+    }
+  }
+
   const monthlyForecast = computed<RevenueForecastMonth[]>(() =>
     forecastMonths.value.map((month) => {
       let total = 0
@@ -464,6 +509,7 @@ export function useClients() {
     updateService,
     deleteService,
     servicesForClient,
+    clientRevenueSummary,
     serviceForecastAmount,
     monthlyRunRate,
     forecastMonths,
