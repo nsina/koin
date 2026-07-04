@@ -1,11 +1,13 @@
 import { db } from '@nuxthub/db'
 import { blob } from '@nuxthub/blob'
 import {
+  clientServices,
+  clients,
   contractors,
   estimatedTaxPayments,
   expenses,
   mileageTrips,
-  recurringTemplates
+  recurringTemplates,
 } from '../../db/schema'
 
 const DELETE_CONFIRMATION = 'DELETE'
@@ -32,12 +34,14 @@ export default defineEventHandler(async (event) => {
   if (body?.confirmation !== DELETE_CONFIRMATION) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Invalid confirmation. Type DELETE to continue.'
+      statusMessage: 'Invalid confirmation. Type DELETE to continue.',
     })
   }
 
   await db.delete(expenses)
   await db.delete(mileageTrips)
+  await db.delete(clientServices)
+  await db.delete(clients)
   await db.delete(contractors)
   await db.delete(recurringTemplates)
   await db.delete(estimatedTaxPayments)

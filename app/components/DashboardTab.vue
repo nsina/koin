@@ -163,13 +163,6 @@ const paymentMethodLegend = computed(() =>
   })),
 )
 
-// ── Formatters ────────────────────────────────────────────────────────────────
-function compactCurrency(value: number | string | Date) {
-  if (typeof value !== 'number') return String(value)
-  if (value >= 1000) return `$${(value / 1000).toFixed(1)}k`
-  return `$${value.toFixed(0)}`
-}
-
 // Share of YTD spend for a vendor — surfaced in the donut tooltip.
 function vendorSharePct(total: number) {
   return store.ytdSpend.value > 0 ? Math.round((total / store.ytdSpend.value) * 100) : 0

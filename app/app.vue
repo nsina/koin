@@ -5,10 +5,17 @@ onMounted(async () => {
   const store = useExpenseStore()
   const { loadSettings } = useSettings()
   const { loadContractors } = useContractors()
+  const { loadClients } = useClients()
   const { loadRecurring, processAutoAdd } = useRecurring()
 
   try {
-    await Promise.all([store.initStore(), loadSettings(), loadContractors(), loadRecurring()])
+    await Promise.all([
+      store.initStore(),
+      loadSettings(),
+      loadContractors(),
+      loadClients(),
+      loadRecurring(),
+    ])
     await processAutoAdd()
   } catch (e) {
     console.error('App init failed:', e)

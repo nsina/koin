@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  A self-hosted expense tracker for startups, solo founders, and small agencies. 
+  A self-hosted finance tracker for startups, solo founders, and small agencies. 
   <br>
 </p>
 
@@ -22,12 +22,13 @@
 
 ## What it does
 
-Most expense trackers are either too expensive, too complicated, or want access to your bank account. Koin is a self-hosted Nuxt app that runs on your own Cloudflare account — or entirely locally if you prefer.
+Most finance trackers are either too expensive, too complicated, or want access to your bank account. Koin is a self-hosted Nuxt app that runs on your own Cloudflare account — or entirely locally if you prefer.
 
 - **Mercury Bank Sync** — Import via API (real-time) or CSV; auto-categorizes 100+ vendor patterns.
 - **Expense Tracking** — Log expenses with receipt attachments and IRS Schedule C category mapping.
 - **Mileage Logging** — Track business trips with current IRS standard rates.
 - **Contractor Tracker** — Monitor payments and automatically flag 1099-NEC ($600+) thresholds.
+- **Client Revenue Forecasting** — Track retainers, hourly clients, commitments, project dates, and monthly forecast rolloff.
 - **Recurring Expenses** — Auto-create monthly/quarterly/annual entries for SaaS and subscriptions.
 - **Tax Reports** — Generate CPA-ready deduction summaries by category with 1099-NEC prep.
 - **IRS Calendar** — Built-in reference for 1099-NEC, W-2, and Form 1040 deadlines.

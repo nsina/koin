@@ -4,6 +4,7 @@ const appReady = useState('app-ready')
 
 const activeTabComponent = computed(() => {
   if (activeTab.value === 'expenses') return resolveComponent('ExpensesTab')
+  if (activeTab.value === 'clients') return resolveComponent('ClientsTab')
   if (activeTab.value === 'dashboard') return resolveComponent('DashboardTab')
   if (activeTab.value === 'mileage') return resolveComponent('MileageTab')
   if (activeTab.value === 'mercury') return resolveComponent('MercuryImportTab')

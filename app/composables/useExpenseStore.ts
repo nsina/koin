@@ -418,24 +418,29 @@ export function useExpenseStore() {
 
   // ── Backup / Restore ─────────────────────────────────────────────────────
 
-  // Version 3 backups cover every SQLite-backed dataset. Earlier (v2) files
+  // Version 4 backups cover every SQLite-backed dataset. Earlier (v2/v3) files
   // only carry expenses + mileage; restore tolerates their missing keys.
   async function exportBackup() {
     // Pull the auxiliary datasets fresh from the API so the backup is complete
     // even if the user never opened those tabs this session.
-    const [contractors, recurringTemplates, estimatedTaxPayments] = await Promise.all([
-      $fetch<unknown[]>('/api/contractors'),
-      $fetch<unknown[]>('/api/recurring'),
-      $fetch<unknown[]>('/api/estimated-taxes?year=all'),
-    ])
+    const [contractors, recurringTemplates, estimatedTaxPayments, clients, clientServices] =
+      await Promise.all([
+        $fetch<unknown[]>('/api/contractors'),
+        $fetch<unknown[]>('/api/recurring'),
+        $fetch<unknown[]>('/api/estimated-taxes?year=all'),
+        $fetch<unknown[]>('/api/clients'),
+        $fetch<unknown[]>('/api/client-services'),
+      ])
     const payload = {
-      version: 3,
+      version: 4,
       exportedAt: new Date().toISOString(),
       expenses: expenses.value,
       mileageTrips: mileageTrips.value,
       contractors,
       recurringTemplates,
       estimatedTaxPayments,
+      clients,
+      clientServices,
     }
     downloadFile(
       `koin-backup-${getTodayISO()}.json`,
@@ -519,15 +524,30 @@ export function useExpenseStore() {
         '/api/estimated-taxes',
         parsed.estimatedTaxPayments,
       )
+      const clientCount = await restoreAuxDataset(
+        '/api/clients',
+        (id) => `/api/clients/${id}`,
+        '/api/clients',
+        parsed.clients,
+      )
+      const clientServiceCount = await restoreAuxDataset(
+        '/api/client-services',
+        (id) => `/api/client-services/${id}`,
+        '/api/client-services',
+        parsed.clientServices,
+      )
 
       // Refresh in-memory stores that own the restored auxiliary data.
       if (contractorCount >= 0) await useContractors().loadContractors()
       if (recurringCount >= 0) await useRecurring().loadRecurring()
+      if (clientCount >= 0 || clientServiceCount >= 0) await useClients().loadClients()
 
       const parts = [`${restoredExpenses.length} expenses`, `${restoredMileage.length} trips`]
       if (contractorCount >= 0) parts.push(`${contractorCount} contractors`)
       if (recurringCount >= 0) parts.push(`${recurringCount} recurring templates`)
       if (estimatedCount >= 0) parts.push(`${estimatedCount} tax payments`)
+      if (clientCount >= 0) parts.push(`${clientCount} clients`)
+      if (clientServiceCount >= 0) parts.push(`${clientServiceCount} client services`)
       toast.add({
         title: 'Restore complete',
         description: `${parts.join(', ')} loaded.`,

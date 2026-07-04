@@ -7,6 +7,14 @@ export function formatCurrency(value: number) {
   }).format(value)
 }
 
+// Compact currency for chart axes/tooltips ($1.2k, $940). Accepts the
+// number | string | Date that chart formatters receive; passes non-numbers through.
+export function compactCurrency(value: number | string | Date) {
+  if (typeof value !== 'number') return String(value)
+  if (Math.abs(value) >= 1000) return `$${(value / 1000).toFixed(1)}k`
+  return `$${value.toFixed(0)}`
+}
+
 export function formatRate(value: number) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',

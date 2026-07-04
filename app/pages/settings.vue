@@ -88,7 +88,7 @@ async function restoreSelectedBackup() {
   const ok = await confirm({
     title: 'Restore backup and overwrite current data?',
     description:
-      'This replaces your current expenses, mileage, contractors, recurring templates, and estimated tax payments with the selected backup file.',
+      'This replaces your current expenses, mileage, contractors, clients, recurring templates, and estimated tax payments with the selected backup file.',
     confirmLabel: 'Restore Backup',
     cancelLabel: 'Cancel',
     color: 'error',
@@ -340,8 +340,8 @@ async function wipeAllData() {
 
       <div class="space-y-3">
         <p class="text-sm text-muted">
-          Export a full backup JSON (expenses, mileage, contractors, recurring templates, and
-          estimated tax payments) or restore from a previous backup file. Receipt files are not
+          Export a full backup JSON (expenses, mileage, contractors, clients, recurring templates,
+          and estimated tax payments) or restore from a previous backup file. Receipt files are not
           included.
         </p>
         <div class="flex flex-wrap items-center gap-2">
@@ -424,7 +424,8 @@ async function wipeAllData() {
             <p class="text-sm font-semibold text-error">Factory Reset</p>
             <p class="text-xs text-muted">
               Permanently deletes all expenses, mileage trips, contractors, recurring templates,
-              estimated tax payments, settings, and uploaded receipt files. This cannot be undone.
+              clients, estimated tax payments, settings, and uploaded receipt files. This cannot be
+              undone.
             </p>
           </div>
 
@@ -467,7 +468,7 @@ async function wipeAllData() {
           variant="soft"
           icon="i-lucide-alert-triangle"
           title="Everything will be permanently deleted"
-          description="All expenses, mileage trips, contractors, recurring templates, estimated tax payments, settings, and uploaded receipt files will be removed with no way to recover them."
+          description="All expenses, mileage trips, contractors, clients, recurring templates, estimated tax payments, settings, and uploaded receipt files will be removed with no way to recover them."
         />
 
         <UFormField label='Type "DELETE" to confirm'>
@@ -488,7 +489,11 @@ async function wipeAllData() {
           color="neutral"
           variant="outline"
           :disabled="wipingAllData"
-          @click="wipeModalOpen = false"
+          @click="
+            () => {
+              wipeModalOpen = false
+            }
+          "
         />
         <UButton
           label="Factory Reset"

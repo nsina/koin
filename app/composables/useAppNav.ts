@@ -1,6 +1,6 @@
 import type { NavigationMenuItem } from '@nuxt/ui'
 
-export type AppTab = 'expenses' | 'dashboard' | 'mileage' | 'mercury' | 'tax'
+export type AppTab = 'expenses' | 'clients' | 'dashboard' | 'mileage' | 'mercury' | 'tax'
 
 const activeTab = ref<AppTab>('expenses')
 
@@ -17,6 +17,12 @@ export function useAppNav() {
       icon: 'i-lucide-car',
       active: activeTab.value === 'mileage',
       onClick: () => (activeTab.value = 'mileage'),
+    },
+    {
+      label: 'Clients',
+      icon: 'i-lucide-hand-coins',
+      active: activeTab.value === 'clients',
+      onClick: () => (activeTab.value = 'clients'),
     },
     {
       label: 'Dashboard',
