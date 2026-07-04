@@ -177,6 +177,19 @@ function addMonths(date: Date, months: number) {
   return new Date(date.getFullYear(), date.getMonth() + months, 1)
 }
 
+// Continuous position on the forecast axis, measured in months from the window's
+// first day (0 = window start, FORECAST_MONTHS = window end). The day-of-month is
+// resolved to a fraction of its month so a mid-month boundary lands mid-column
+// instead of snapping to a whole month. `inclusive` places the mark at the *end*
+// of the given day — used for end / commitment-end dates so a service ending on
+// the 31st fills its month column; start dates use the beginning of the day.
+function axisFraction(isoDate: string, windowStart: number, inclusive = false) {
+  const d = new Date(`${isoDate}T12:00:00`)
+  const monthsOut = d.getFullYear() * 12 + d.getMonth() - windowStart
+  const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()
+  return monthsOut + (d.getDate() - (inclusive ? 0 : 1)) / daysInMonth
+}
+
 // Full invoice amount for one billing cycle (hourly = rate x est. monthly hours).
 function serviceForecastAmount(service: ClientService) {
   if (service.pricingModel === 'hourly') {
@@ -451,22 +464,27 @@ export function useClients() {
   const timelineRows = computed<RevenueTimelineRow[]>(() => {
     const months = forecastMonths.value
     if (months.length === 0) return []
-    const first = monthIndex(months[0]!.iso)
-    const last = monthIndex(months[months.length - 1]!.iso)
+    const windowStart = monthIndex(months[0]!.iso)
     const endingSoonIds = new Set(endingSoonServices.value.map((e) => e.service.id))
 
     return clientServices.value
       .filter((service) => service.status === 'active')
       .map((service) => {
         const client = clients.value.find((c) => c.id === service.clientId)
-        const start = Math.max(monthIndex(service.startDate), first)
-        const end = Math.min(service.endDate ? monthIndex(service.endDate) : last, last)
-        if (!client || end < first || start > last) return null
+        // Raw (unclamped) day-accurate axis positions; a service is in view only
+        // if its span overlaps the [0, FORECAST_MONTHS] window at all.
+        const startRaw = axisFraction(service.startDate, windowStart)
+        const endRaw = service.endDate
+          ? axisFraction(service.endDate, windowStart, true)
+          : FORECAST_MONTHS
+        if (!client || endRaw <= 0 || startRaw >= FORECAST_MONTHS) return null
+
+        const startOffset = clamp(startRaw, 0, FORECAST_MONTHS)
+        const endFrac = clamp(endRaw, 0, FORECAST_MONTHS)
         const commitmentEnd = service.commitmentEndDate ?? service.endDate
-        const commitmentSpan = commitmentEnd
-          ? Math.max(0, Math.min(monthIndex(commitmentEnd), last) - start + 1)
-          : 0
-        const endIdx = service.endDate ? monthIndex(service.endDate) : null
+        const commitmentFrac = commitmentEnd
+          ? clamp(axisFraction(commitmentEnd, windowStart, true), startOffset, endFrac)
+          : startOffset
         return {
           id: service.id,
           clientName: client.name,
@@ -476,15 +494,15 @@ export function useClients() {
           startDate: service.startDate,
           endDate: service.endDate,
           commitmentEndDate: service.commitmentEndDate,
-          startOffset: start - first,
-          span: Math.max(1, end - start + 1),
-          commitmentSpan,
+          startOffset,
+          span: endFrac - startOffset,
+          commitmentSpan: commitmentFrac - startOffset,
           endLabel: service.endDate ? formatDateShort(service.endDate) : null,
           commitmentEndLabel: service.commitmentEndDate
             ? formatDateShort(service.commitmentEndDate)
             : null,
-          endsWithinWindow: endIdx !== null && endIdx <= last,
-          extendsPastWindow: endIdx === null || endIdx > last,
+          endsWithinWindow: !!service.endDate && endRaw <= FORECAST_MONTHS,
+          extendsPastWindow: !service.endDate || endRaw > FORECAST_MONTHS,
           isEndingSoon: endingSoonIds.has(service.id),
         }
       })
@@ -494,8 +512,10 @@ export function useClients() {
   const timelineTodayRatio = computed(() => {
     const now = _clientNow.value
     if (!now) return 0
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
-    return (now.getDate() - 1) / daysInMonth / FORECAST_MONTHS
+    // Today shares the bars' coordinate system: its month is the window start, so
+    // the ratio is just its day-fraction of the 12-month axis.
+    const windowStart = now.getFullYear() * 12 + now.getMonth()
+    return axisFraction(toLocalISO(now), windowStart) / FORECAST_MONTHS
   })
 
   return {
