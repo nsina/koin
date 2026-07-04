@@ -425,7 +425,11 @@ async function submit() {
                 label="Hide"
                 color="neutral"
                 variant="soft"
-                @click="quickCreateOpen = false"
+                @click="
+                  () => {
+                    quickCreateOpen = false
+                  }
+                "
               />
               <UButton
                 label="Add"
@@ -518,7 +522,11 @@ async function submit() {
               color="neutral"
               variant="ghost"
               size="xs"
-              @click="draft.receiptKeys.splice(i, 1)"
+              @click="
+                () => {
+                  draft.receiptKeys.splice(i, 1)
+                }
+              "
             />
           </div>
         </div>

@@ -24,7 +24,7 @@ const { navItems } = useAppNav()
         variant="ghost"
         class="no-print"
         aria-label="Settings"
-        @click="navigateTo('/settings')"
+        to="/settings"
       />
     </template>
 

@@ -210,7 +210,11 @@ watch(
                   :icon="showEin ? 'i-lucide-eye-off' : 'i-lucide-eye'"
                   color="neutral"
                   variant="ghost"
-                  @click="showEin = !showEin"
+                  @click="
+                    () => {
+                      showEin = !showEin
+                    }
+                  "
                 />
               </div>
               <p class="mt-1 text-xs text-muted">Stored locally only, never transmitted.</p>

@@ -47,12 +47,10 @@ function calendarDateToISO(date: DateValue): string {
 
 const singleCalendarValue = computed(() => isoToCalendarDate(props.modelValue))
 
-const rangeCalendarValue = computed(
-  (): CalendarDateRange => ({
-    start: isoToCalendarDate(props.from),
-    end: isoToCalendarDate(props.to),
-  }),
-)
+const rangeCalendarValue = computed((): CalendarDateRange => ({
+  start: isoToCalendarDate(props.from),
+  end: isoToCalendarDate(props.to),
+}))
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function onSingleUpdate(date: any) {
