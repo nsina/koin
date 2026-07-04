@@ -89,6 +89,22 @@ Schema is in `server/db/schema.ts`; migrations in `server/db/migrations/`.
 
 Prettier: **no semicolons**, single quotes, 100-char line width, no trailing commas, `tailwindcss` plugin sorts classes. ESLint extends `@nuxt/eslint`; `vue/multi-word-component-names` is disabled.
 
+## UI/UX Conventions
+
+Based on [EUI button placement guidelines](https://eui.elastic.co/v101.4.0/docs/components/navigation/buttons/guidelines/). Keep these consistent across all modals and forms.
+
+**Button placement**
+
+- **Modals / flyouts / popovers** (restricted width): actions go **bottom-right**, dismiss on the left, primary on the far right — `flex justify-end gap-2` with `Cancel` first, primary action last.
+- **Full-page forms** (unrestricted width): actions go **bottom-left**.
+- **Page-header actions** (e.g. a "Create" button tied to the page title): **upper-right**.
+
+**Button hierarchy**
+
+- One primary action per modal/form/section. Primary = `variant="solid"`; secondary/dismiss = `variant="soft"`. This app is monochrome (`color="neutral"`) and expresses hierarchy through variant, not accent color — keep it that way.
+- Dismiss buttons are never destructive-colored. Use `color="error"` only for the primary action of a genuinely destructive confirm (see `ConfirmModal`).
+- Max ~2 buttons per group; use a dropdown/menu for 3+.
+
 ## Commit Style
 
 Follow [Conventional Commits](https://www.conventionalcommits.org):
