@@ -120,6 +120,7 @@ watch(
   <UModal
     :open="props.open"
     title="Recurring Expenses"
+    :dismissible="false"
     :ui="{ content: 'sm:max-w-5xl' }"
     @update:open="emit('update:open', $event)"
   >
@@ -170,10 +171,13 @@ watch(
               <USelect v-model="draft.frequency" :items="frequencyItems" class="w-full" />
             </UFormField>
             <UFormField label="Next Due Date">
-              <AppDatePicker v-model="draft.nextDueDate" />
+              <AppDatePicker v-model="draft.nextDueDate" block />
             </UFormField>
             <UFormField label="End Date (optional)">
               <AppDatePicker
+                block
+                clearable
+                placeholder="No end date"
                 :model-value="draft.endDate ?? undefined"
                 @update:model-value="
                   (v) => {

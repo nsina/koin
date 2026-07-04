@@ -300,6 +300,7 @@ async function submit() {
   <UModal
     :open="open"
     :title="expense ? 'Edit Expense' : 'New Expense'"
+    :dismissible="false"
     :ui="{ content: 'sm:max-w-5xl' }"
     @update:open="emit('update:open', $event)"
   >
@@ -307,7 +308,7 @@ async function submit() {
       <div class="space-y-4">
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <UFormField label="Date">
-            <AppDatePicker v-model="draft.date" />
+            <AppDatePicker v-model="draft.date" block />
           </UFormField>
 
           <UFormField label="Vendor / Payee">
@@ -557,7 +558,7 @@ async function submit() {
     </template>
 
     <template #footer>
-      <div class="flex justify-end gap-2">
+      <div class="flex w-full justify-end gap-2">
         <UButton label="Cancel" color="neutral" variant="soft" @click="close" />
         <UButton
           :label="expense ? 'Save Expense' : 'Add Expense'"

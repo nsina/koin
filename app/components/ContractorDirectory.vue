@@ -155,6 +155,7 @@ watch(
   <UModal
     :open="props.open"
     title="Contractors"
+    :dismissible="false"
     :ui="{ content: 'sm:max-w-5xl max-h-[85vh]' }"
     @update:open="emit('update:open', $event)"
   >
