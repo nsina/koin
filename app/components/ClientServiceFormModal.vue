@@ -155,12 +155,13 @@ async function submit() {
     <template #body>
       <div class="grid gap-4 sm:grid-cols-2">
         <UFormField label="Client" class="sm:col-span-2">
-          <USelect
+          <USelectMenu
             v-model="draft.clientId"
             :items="clientItems"
             value-key="value"
             label-key="label"
             placeholder="Select a client..."
+            :search-input="{ placeholder: 'Search clients...', icon: 'i-lucide-search' }"
             class="w-full"
           />
         </UFormField>
