@@ -55,13 +55,35 @@ Schema is in `server/db/schema.ts`; migrations in `server/db/migrations/`.
 
 - **Database Dialect**: The database dialect is set in the `nuxt.config.ts` file, within the `hub.db` option or `hub.db.dialect` property.
 - **Drizzle Config**: Don't generate the `drizzle.config.ts` file manually, it is generated automatically by NuxtHub.
-- **Generate Migrations**: Use `npx nuxt db generate` to automatically generate database migrations from schema changes
-- **Never Write Manual Migrations**: Do not manually create SQL migration files in the `server/db/migrations/` directory
-- **Workflow**:
-  1. Create or modify the database schema in `server/db/schema.ts` or any other schema file in the `server/db/schema/` directory
-  2. Run `npx nuxt db generate` to generate the migration
-  3. Run `npx nuxt db migrate` to apply the migration to the database, or run `npx nuxt dev` to apply the migration during development
 - **Access the database**: Use the `db` instance from `@nuxthub/db` (or `hub:db` for backwards compatibility) to query the database, it is a Drizzle ORM instance.
+
+### Golden Rules
+
+1. **Schema is the source of truth.** Change `server/db/schema.ts`, never a `.sql` file. The migrations are generated *from* the schema.
+2. **Never hand-write or hand-edit migration artifacts.** That means the `.sql` files, `meta/_journal.json`, and `meta/*_snapshot.json` are all generator-owned. Hand-editing them desyncs the Drizzle snapshot chain (a real bug this repo already had to unwind).
+3. **Never edit a migration that has been applied anywhere** (your local DB, a teammate's, or production). Applied migrations are immutable history — add a *new* migration for the next change.
+
+### Standard Workflow (any schema change or enhancement)
+
+1. Edit `server/db/schema.ts` (add/modify a table or column).
+2. Run `npx nuxt db generate` — creates the next `NNNN_*.sql` **and** its snapshot, and appends to `_journal.json`.
+3. Review the generated `.sql` to confirm it matches your intent.
+4. Apply it: `npx nuxt dev` (applies on startup) or `npx nuxt db migrate`.
+5. Run `pnpm typecheck`, then commit the schema change **and** the generated migration files together in one commit.
+
+### Troubleshooting & Recovery
+
+- **`table/column already exists` on apply** — the DB already has that state under an older migration record (common after consolidating or renaming migrations). Don't drop anything; tell NuxtHub the state is already present:
+  `npx nuxt db mark-as-migrated <migration_name>`
+- **Consolidating/squashing migrations** — delete the target `.sql` files, remove their `meta/*_snapshot.json`, trim their entries from `meta/_journal.json` back to the last good baseline, then run `npx nuxt db generate` to emit one fresh migration. Do **not** write the squashed SQL by hand. Reset local dev state cleanly with `rm -rf .data/hub/database` (discards local data), or `mark-as-migrated` if the tables already match.
+- **Inspect state** — `npx nuxt db migrations list` locally; add `--production` for the remote D1.
+
+### Production (Cloudflare / NuxtHub D1)
+
+- Pending migrations apply **automatically at deploy** (git-integration CI or `npx nuxthub deploy`); each runs once, tracked in the remote `_hub_migrations` table. There is no manual "run the SQL" step.
+- **Before deploying a consolidated/renamed migration to a prod DB that already has those tables**, baseline it so it isn't re-run:
+  `npx nuxthub database migrations mark-all-applied --production`
+- Never paste migration SQL into the D1 console by hand — it desyncs `_hub_migrations` and NuxtHub will try to re-run it on the next deploy.
 
 ## Code Style
 
