@@ -5,18 +5,13 @@ import type {
   ClientService,
   ClientServiceStatus,
   ClientStatus,
-  PricingModel,
 } from '~/composables/useClients'
 import { LegendPosition } from '#imports'
 
 const {
   clients,
   clientServices,
-  addClient,
-  updateClient,
   deleteClient,
-  addService,
-  updateService,
   deleteService,
   servicesForClient,
   serviceForecastAmount,
@@ -34,7 +29,6 @@ const {
 } = useClients()
 
 const { confirm } = useConfirm()
-const toast = useToast()
 
 const selectedClientId = ref<string | null>(null)
 const clientFormOpen = ref(false)
@@ -49,22 +43,11 @@ const CLIENT_STATUS_ITEMS = [
   { label: 'Ended', value: 'ended' },
 ]
 
-const SERVICE_STATUS_ITEMS = [
-  { label: 'Active', value: 'active' },
-  { label: 'Paused', value: 'paused' },
-  { label: 'Completed', value: 'completed' },
-]
-
 const CADENCE_ITEMS = [
   { label: 'Monthly', value: 'monthly' },
   { label: 'Quarterly', value: 'quarterly' },
   { label: 'Annually', value: 'annually' },
   { label: 'One-time', value: 'one_time' },
-]
-
-const PRICING_MODEL_ITEMS = [
-  { label: 'Fixed fee', value: 'fixed' },
-  { label: 'Hourly', value: 'hourly' },
 ]
 
 const STATUS_COLORS: Record<
@@ -82,50 +65,12 @@ const CADENCE_LABELS = Object.fromEntries(
   CADENCE_ITEMS.map((item) => [item.value, item.label]),
 ) as Record<BillingCadence, string>
 
-function makeClientDraft() {
-  return {
-    name: editingClient.value?.name ?? '',
-    contactName: editingClient.value?.contactName ?? '',
-    email: editingClient.value?.email ?? '',
-    billingCode: editingClient.value?.billingCode ?? '',
-    status: editingClient.value?.status ?? ('active' as ClientStatus),
-    notes: editingClient.value?.notes ?? '',
-  }
-}
-
-function makeServiceDraft() {
-  return {
-    clientId: editingService.value?.clientId ?? selectedClientId.value ?? '',
-    name: editingService.value?.name ?? '',
-    amount: editingService.value?.amount ?? 0,
-    pricingModel: editingService.value?.pricingModel ?? ('fixed' as PricingModel),
-    hourlyRate: editingService.value?.hourlyRate ?? 0,
-    estimatedMonthlyHours: editingService.value?.estimatedMonthlyHours ?? 0,
-    billingCadence: editingService.value?.billingCadence ?? ('monthly' as BillingCadence),
-    startDate: editingService.value?.startDate ?? getTodayISO(),
-    endDate: editingService.value?.endDate ?? null,
-    commitmentEndDate: editingService.value?.commitmentEndDate ?? null,
-    status: editingService.value?.status ?? ('active' as ClientServiceStatus),
-    notes: editingService.value?.notes ?? '',
-  }
-}
-
-const clientDraft = reactive(makeClientDraft())
-const serviceDraft = reactive(makeServiceDraft())
-
 const selectedClient = computed(
   () => clients.value.find((client) => client.id === selectedClientId.value) ?? null,
 )
 
 const selectedClientServices = computed(() =>
   selectedClient.value ? servicesForClient(selectedClient.value.id) : [],
-)
-
-const clientItems = computed(() =>
-  clients.value.map((client) => ({
-    label: client.name,
-    value: client.id,
-  })),
 )
 
 const clientSearch = ref('')
@@ -228,24 +173,17 @@ watch(
   { immediate: true },
 )
 
-watch(editingClient, () => {
-  Object.assign(clientDraft, makeClientDraft())
+// Reset the edit target once a modal fully closes so the next "New" opens blank.
+watch(clientFormOpen, (open) => {
+  if (!open) editingClient.value = null
 })
 
-watch(editingService, () => {
-  Object.assign(serviceDraft, makeServiceDraft())
+watch(serviceFormOpen, (open) => {
+  if (!open) editingService.value = null
 })
-
-watch(
-  () => serviceDraft.pricingModel,
-  (model) => {
-    if (model === 'hourly') serviceDraft.billingCadence = 'monthly'
-  },
-)
 
 function openNewClient() {
   editingClient.value = null
-  Object.assign(clientDraft, makeClientDraft())
   clientFormOpen.value = true
 }
 
@@ -255,9 +193,8 @@ function openEditClient(client: Client) {
 }
 
 function openNewService(clientId = selectedClientId.value) {
-  if (!clientId) return
+  if (clientId) selectedClientId.value = clientId
   editingService.value = null
-  Object.assign(serviceDraft, makeServiceDraft(), { clientId })
   serviceFormOpen.value = true
 }
 
@@ -267,92 +204,8 @@ function openEditService(service: ClientService) {
   serviceFormOpen.value = true
 }
 
-function closeClientForm() {
-  clientFormOpen.value = false
-  editingClient.value = null
-}
-
-function closeServiceForm() {
-  serviceFormOpen.value = false
-  editingService.value = null
-}
-
-async function submitClient() {
-  if (!clientDraft.name.trim()) {
-    toast.add({ title: 'Client name is required', color: 'warning' })
-    return
-  }
-
-  const payload = {
-    name: clientDraft.name.trim(),
-    contactName: clientDraft.contactName.trim(),
-    email: clientDraft.email.trim() || null,
-    billingCode: clientDraft.billingCode.trim().toUpperCase(),
-    status: clientDraft.status,
-    notes: clientDraft.notes.trim(),
-  }
-
-  if (editingClient.value) {
-    await updateClient(editingClient.value.id, payload)
-  } else {
-    const client = await addClient(payload)
-    selectedClientId.value = client.id
-  }
-  closeClientForm()
-}
-
-async function submitService() {
-  if (!serviceDraft.clientId) {
-    toast.add({ title: 'Select a client', color: 'warning' })
-    return
-  }
-  if (!serviceDraft.name.trim()) {
-    toast.add({ title: 'Service name is required', color: 'warning' })
-    return
-  }
-  if (serviceDraft.pricingModel === 'hourly' && serviceDraft.hourlyRate <= 0) {
-    toast.add({ title: 'Hourly rate must be greater than zero', color: 'warning' })
-    return
-  }
-  if (serviceDraft.pricingModel === 'hourly' && serviceDraft.estimatedMonthlyHours <= 0) {
-    toast.add({ title: 'Estimated monthly hours must be greater than zero', color: 'warning' })
-    return
-  }
-  if (serviceDraft.pricingModel !== 'hourly' && serviceDraft.amount <= 0) {
-    toast.add({ title: 'Amount must be greater than zero', color: 'warning' })
-    return
-  }
-  if (serviceDraft.endDate && serviceDraft.endDate < serviceDraft.startDate) {
-    toast.add({ title: 'End date must be after the start date', color: 'warning' })
-    return
-  }
-  if (serviceDraft.commitmentEndDate && serviceDraft.commitmentEndDate < serviceDraft.startDate) {
-    toast.add({ title: 'Commitment date must be after the start date', color: 'warning' })
-    return
-  }
-
-  const payload = {
-    clientId: serviceDraft.clientId,
-    name: serviceDraft.name.trim(),
-    amount:
-      serviceDraft.pricingModel === 'hourly'
-        ? round2(serviceDraft.hourlyRate * serviceDraft.estimatedMonthlyHours)
-        : round2(serviceDraft.amount),
-    pricingModel: serviceDraft.pricingModel,
-    hourlyRate: serviceDraft.pricingModel === 'hourly' ? round2(serviceDraft.hourlyRate) : null,
-    estimatedMonthlyHours:
-      serviceDraft.pricingModel === 'hourly' ? round2(serviceDraft.estimatedMonthlyHours) : null,
-    billingCadence: serviceDraft.billingCadence,
-    startDate: serviceDraft.startDate,
-    endDate: serviceDraft.endDate || null,
-    commitmentEndDate: serviceDraft.commitmentEndDate || null,
-    status: serviceDraft.status,
-    notes: serviceDraft.notes.trim(),
-  }
-
-  if (editingService.value) await updateService(editingService.value.id, payload)
-  else await addService(payload)
-  closeServiceForm()
+function onClientSaved(client: Client) {
+  selectedClientId.value = client.id
 }
 
 async function removeClient(client: Client) {
@@ -440,180 +293,6 @@ async function removeService(service: ClientService) {
           Next 3 months
         </p>
       </UCard>
-    </div>
-
-    <div v-if="clientFormOpen" class="rounded-lg border border-default bg-muted p-4">
-      <div class="mb-4 flex items-center justify-between gap-3">
-        <p class="font-semibold">{{ editingClient ? 'Edit Client' : 'New Client' }}</p>
-        <UButton
-          icon="i-lucide-x"
-          color="neutral"
-          variant="ghost"
-          size="sm"
-          @click="closeClientForm"
-        />
-      </div>
-      <div class="grid gap-4 sm:grid-cols-2">
-        <UFormField label="Client Name" class="sm:col-span-2">
-          <UInput v-model="clientDraft.name" placeholder="Acme Inc." class="w-full" />
-        </UFormField>
-        <UFormField label="Contact Name">
-          <UInput v-model="clientDraft.contactName" placeholder="Jane Doe" class="w-full" />
-        </UFormField>
-        <UFormField label="Email">
-          <UInput
-            v-model="clientDraft.email"
-            type="email"
-            placeholder="client@example.com"
-            class="w-full"
-          />
-        </UFormField>
-        <UFormField label="Status">
-          <USelect
-            v-model="clientDraft.status"
-            :items="CLIENT_STATUS_ITEMS"
-            value-key="value"
-            label-key="label"
-            class="w-full"
-          />
-        </UFormField>
-        <UFormField label="Billing Code" hint="Mercury" class="sm:col-span-2">
-          <UInput
-            v-model="clientDraft.billingCode"
-            placeholder="DCNE"
-            class="w-full font-mono uppercase"
-          />
-        </UFormField>
-        <UFormField label="Notes" class="sm:col-span-2">
-          <UTextarea v-model="clientDraft.notes" :rows="2" autoresize class="w-full" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex justify-end gap-2">
-        <UButton label="Cancel" color="neutral" variant="soft" @click="closeClientForm" />
-        <UButton
-          :label="editingClient ? 'Save Client' : 'Add Client'"
-          color="neutral"
-          @click="submitClient"
-        />
-      </div>
-    </div>
-
-    <div v-if="serviceFormOpen" class="rounded-lg border border-default bg-muted p-4">
-      <div class="mb-4 flex items-center justify-between gap-3">
-        <p class="font-semibold">{{ editingService ? 'Edit Service' : 'New Service' }}</p>
-        <UButton
-          icon="i-lucide-x"
-          color="neutral"
-          variant="ghost"
-          size="sm"
-          @click="closeServiceForm"
-        />
-      </div>
-      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <UFormField label="Client">
-          <USelect
-            v-model="serviceDraft.clientId"
-            :items="clientItems"
-            value-key="value"
-            label-key="label"
-            class="w-full"
-          />
-        </UFormField>
-        <UFormField label="Service">
-          <UInput
-            v-model="serviceDraft.name"
-            placeholder="Retainer, project, setup fee"
-            class="w-full"
-          />
-        </UFormField>
-        <UFormField label="Pricing">
-          <USelect
-            v-model="serviceDraft.pricingModel"
-            :items="PRICING_MODEL_ITEMS"
-            value-key="value"
-            label-key="label"
-            class="w-full"
-          />
-        </UFormField>
-        <UFormField v-if="serviceDraft.pricingModel === 'fixed'" label="Amount">
-          <UInputNumber
-            v-model="serviceDraft.amount"
-            :min="0"
-            :step="0.01"
-            :increment="false"
-            :decrement="false"
-            :format-options="{ minimumFractionDigits: 2, maximumFractionDigits: 2 }"
-            class="w-full"
-          />
-        </UFormField>
-        <template v-else>
-          <UFormField label="Hourly Rate">
-            <UInputNumber
-              v-model="serviceDraft.hourlyRate"
-              :min="0"
-              :step="1"
-              :increment="false"
-              :decrement="false"
-              :format-options="{ minimumFractionDigits: 2, maximumFractionDigits: 2 }"
-              class="w-full"
-            />
-          </UFormField>
-          <UFormField label="Est. Monthly Hours">
-            <UInputNumber
-              v-model="serviceDraft.estimatedMonthlyHours"
-              :min="0"
-              :step="1"
-              :increment="false"
-              :decrement="false"
-              class="w-full"
-            />
-          </UFormField>
-        </template>
-        <UFormField label="Cadence">
-          <USelect
-            v-model="serviceDraft.billingCadence"
-            :items="CADENCE_ITEMS"
-            value-key="value"
-            label-key="label"
-            class="w-full"
-          />
-        </UFormField>
-        <UFormField label="Start Date">
-          <AppDatePicker v-model="serviceDraft.startDate" />
-        </UFormField>
-        <UFormField label="End Date">
-          <AppDatePicker
-            :model-value="serviceDraft.endDate ?? undefined"
-            @update:model-value="(v) => (serviceDraft.endDate = v || null)"
-          />
-        </UFormField>
-        <UFormField label="Commitment Through">
-          <AppDatePicker
-            :model-value="serviceDraft.commitmentEndDate ?? undefined"
-            @update:model-value="(v) => (serviceDraft.commitmentEndDate = v || null)"
-          />
-        </UFormField>
-        <UFormField label="Status">
-          <USelect
-            v-model="serviceDraft.status"
-            :items="SERVICE_STATUS_ITEMS"
-            value-key="value"
-            label-key="label"
-            class="w-full"
-          />
-        </UFormField>
-        <UFormField label="Notes" class="sm:col-span-2 xl:col-span-4">
-          <UTextarea v-model="serviceDraft.notes" :rows="2" autoresize class="w-full" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex justify-end gap-2">
-        <UButton label="Cancel" color="neutral" variant="soft" @click="closeServiceForm" />
-        <UButton
-          :label="editingService ? 'Save Service' : 'Add Service'"
-          color="neutral"
-          @click="submitService"
-        />
-      </div>
     </div>
 
     <div class="grid items-start gap-4 xl:grid-cols-5">
@@ -1078,5 +757,12 @@ async function removeService(service: ClientService) {
         </div>
       </div>
     </UCard>
+
+    <ClientFormModal v-model:open="clientFormOpen" :client="editingClient" @saved="onClientSaved" />
+    <ClientServiceFormModal
+      v-model:open="serviceFormOpen"
+      :service="editingService"
+      :default-client-id="selectedClientId"
+    />
   </div>
 </template>

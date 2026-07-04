@@ -23,6 +23,8 @@ const props = defineProps<{
   range?: boolean
   placeholder?: string
   disabled?: boolean
+  clearable?: boolean
+  block?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -66,6 +68,20 @@ function onRangeUpdate(range: any) {
   if (r?.start && r?.end) isOpen.value = false
 }
 
+const hasValue = computed(() =>
+  props.range ? Boolean(props.from || props.to) : Boolean(props.modelValue),
+)
+
+function clear() {
+  if (props.range) {
+    emit('update:from', '')
+    emit('update:to', '')
+  } else {
+    emit('update:modelValue', '')
+  }
+  isOpen.value = false
+}
+
 const buttonLabel = computed(() => {
   if (props.range) {
     if (!props.from && !props.to) return props.placeholder ?? 'Pick a range'
@@ -84,9 +100,14 @@ const buttonLabel = computed(() => {
       color="neutral"
       variant="outline"
       icon="i-lucide-calendar"
+      :trailing-icon="block ? 'i-lucide-chevron-down' : undefined"
       :label="buttonLabel"
       :disabled="disabled"
-      :class="range ? 'w-58' : 'min-w-36'"
+      :class="block ? 'w-full justify-start' : range ? 'w-58' : 'min-w-36'"
+      :ui="{
+        label: hasValue ? undefined : 'text-dimmed',
+        trailingIcon: 'ms-auto text-dimmed',
+      }"
     />
     <template #content>
       <div class="p-3">
@@ -97,6 +118,19 @@ const buttonLabel = computed(() => {
           @update:model-value="onRangeUpdate"
         />
         <UCalendar v-else :model-value="singleCalendarValue" @update:model-value="onSingleUpdate" />
+        <div
+          v-if="clearable && hasValue"
+          class="mt-3 flex justify-end border-t border-default pt-2"
+        >
+          <UButton
+            label="Clear"
+            icon="i-lucide-x"
+            color="neutral"
+            variant="ghost"
+            size="xs"
+            @click="clear"
+          />
+        </div>
       </div>
     </template>
   </UPopover>
