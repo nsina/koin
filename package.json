@@ -15,9 +15,7 @@
     "lint:fix": "eslint . --fix",
     "format:check": "prettier --check \"app/**/*.{vue,js,ts}\"",
     "format": "prettier --write \"app/**/*.{vue,js,ts}\"",
-    "typecheck": "nuxt typecheck",
-    "release": "changelogen --release && git push --follow-tags",
-    "release:preview": "changelogen --no-bump --no-tag"
+    "typecheck": "nuxt typecheck"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.116",
@@ -34,7 +32,6 @@
   "devDependencies": {
     "@nuxt/eslint": "^1.16.0",
     "@tanstack/vue-table": "^8.21.3",
-    "changelogen": "^0.6.2",
     "drizzle-kit": "^0.31.10",
     "eslint": "^10.6.0",
     "eslint-config-prettier": "^10.1.8",
