@@ -47,6 +47,8 @@ Older years: _(none yet)_
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-04
+
 ### Added
 
 - **Clients tab — Revenue Tracking** — new tab tracking clients, services sold, and forward-looking revenue (`ClientsTab.vue`, `useClients.ts`, `clients` + `client_services` tables via migration `0001_colossal_captain_flint`). Fixed + hourly pricing (`rate × est. monthly hours`), committed-vs-projected 12-month forecast (recurring cadences amortized to a monthly run rate via `monthlyRunRate` — quarterly ÷3, annual ÷12 spread across every active month; one-time fees land as single-month spikes; one shared definition across all KPIs/list/detail), and Gantt-style timeline (single-hue `primary`, solid = committed / diagonal-hatch = projected). Optional per-client `billingCode` for Mercury matching. REST via `/api/clients/*` + `/api/client-services/*` (client delete cascades services). Backup/restore extended to `clients` + `clientServices` (payload `version` 3 → 4; clients restored before services to avoid cascade orphans); factory wipe clears both tables.
