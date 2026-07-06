@@ -53,6 +53,7 @@ export interface RevenueForecastMonth {
 
 export interface RevenueTimelineRow {
   id: string
+  clientId: string
   clientName: string
   serviceName: string
   amount: number
@@ -66,8 +67,18 @@ export interface RevenueTimelineRow {
   endLabel: string | null
   commitmentEndLabel: string | null
   endsWithinWindow: boolean
+  startsBeforeWindow: boolean
   extendsPastWindow: boolean
   isEndingSoon: boolean
+}
+
+// A client and its active service bars, so the timeline shows one visual cluster
+// per client instead of repeating the client name on every service row.
+export interface RevenueTimelineGroup {
+  clientId: string
+  clientName: string
+  services: RevenueTimelineRow[]
+  endingSoonCount: number
 }
 
 const clients = ref<Client[]>([])
@@ -326,9 +337,11 @@ export function useClients() {
     return Array.from({ length: FORECAST_MONTHS }, (_, i) => {
       const date = addMonths(now, i)
       const iso = monthIso(date)
+      // "Jul ’26", not "Jul 26" — a bare 2-digit year reads as a day date next
+      // to chips like "Ends Aug 21".
       return {
         iso,
-        label: date.toLocaleString('en-US', { month: 'short', year: '2-digit' }),
+        label: `${date.toLocaleString('en-US', { month: 'short' })} ’${date.toLocaleString('en-US', { year: '2-digit' })}`,
       }
     })
   })
@@ -471,22 +484,29 @@ export function useClients() {
       .filter((service) => service.status === 'active')
       .map((service) => {
         const client = clients.value.find((c) => c.id === service.clientId)
+        // A one-time fee without an explicit end date is a discrete event on its
+        // start day (mirrors serviceRevenueInMonth), not an open-ended bar.
+        const effectiveEnd =
+          service.endDate ?? (service.billingCadence === 'one_time' ? service.startDate : null)
         // Raw (unclamped) day-accurate axis positions; a service is in view only
         // if its span overlaps the [0, FORECAST_MONTHS] window at all.
         const startRaw = axisFraction(service.startDate, windowStart)
-        const endRaw = service.endDate
-          ? axisFraction(service.endDate, windowStart, true)
+        const endRaw = effectiveEnd
+          ? axisFraction(effectiveEnd, windowStart, true)
           : FORECAST_MONTHS
         if (!client || endRaw <= 0 || startRaw >= FORECAST_MONTHS) return null
 
         const startOffset = clamp(startRaw, 0, FORECAST_MONTHS)
         const endFrac = clamp(endRaw, 0, FORECAST_MONTHS)
-        const commitmentEnd = service.commitmentEndDate ?? service.endDate
+        // The one-time fallback keeps the event bar solid, matching
+        // serviceIsCommittedInMonth (one-time fees are committed by definition).
+        const commitmentEnd = service.commitmentEndDate ?? effectiveEnd
         const commitmentFrac = commitmentEnd
           ? clamp(axisFraction(commitmentEnd, windowStart, true), startOffset, endFrac)
           : startOffset
         return {
           id: service.id,
+          clientId: client.id,
           clientName: client.name,
           serviceName: service.name,
           amount: serviceForecastAmount(service),
@@ -497,16 +517,40 @@ export function useClients() {
           startOffset,
           span: endFrac - startOffset,
           commitmentSpan: commitmentFrac - startOffset,
-          endLabel: service.endDate ? formatDateShort(service.endDate) : null,
+          endLabel: effectiveEnd ? formatDateShort(effectiveEnd) : null,
           commitmentEndLabel: service.commitmentEndDate
             ? formatDateShort(service.commitmentEndDate)
             : null,
-          endsWithinWindow: !!service.endDate && endRaw <= FORECAST_MONTHS,
-          extendsPastWindow: !service.endDate || endRaw > FORECAST_MONTHS,
+          endsWithinWindow: !!effectiveEnd && endRaw <= FORECAST_MONTHS,
+          startsBeforeWindow: startRaw < 0,
+          extendsPastWindow: !effectiveEnd || endRaw > FORECAST_MONTHS,
           isEndingSoon: endingSoonIds.has(service.id),
         }
       })
       .filter(Boolean) as RevenueTimelineRow[]
+  })
+
+  // Timeline rows grouped by client (alphabetical, matching the master list) so
+  // each client reads as one cluster. `endingSoonCount` lets a multi-service
+  // client surface its at-risk services in the group header without the reader
+  // scanning every bar.
+  const timelineGroups = computed<RevenueTimelineGroup[]>(() => {
+    const groups = new Map<string, RevenueTimelineGroup>()
+    for (const row of timelineRows.value) {
+      let group = groups.get(row.clientId)
+      if (!group) {
+        group = {
+          clientId: row.clientId,
+          clientName: row.clientName,
+          services: [],
+          endingSoonCount: 0,
+        }
+        groups.set(row.clientId, group)
+      }
+      group.services.push(row)
+      if (row.isEndingSoon) group.endingSoonCount++
+    }
+    return [...groups.values()].sort((a, b) => a.clientName.localeCompare(b.clientName))
   })
 
   const timelineTodayRatio = computed(() => {
@@ -541,6 +585,7 @@ export function useClients() {
     activeClientCount,
     endingSoonServices,
     timelineRows,
+    timelineGroups,
     timelineTodayRatio,
   }
 }

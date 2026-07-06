@@ -47,7 +47,15 @@ Older years: _(none yet)_
 
 ## [Unreleased]
 
+### Changed
+
+- **Clients tab — timeline grouping** — Gantt rows clustered per client (`timelineGroups`, `useClients.ts`): multi-service clients get a header row (name · service count · ending-soon badge), single-service clients stay client-name-first; groups alphabetical to match the client list. Scroll capped (`max-h-128`) with sticky month-axis header (`Client · Service` + 12 columns).
+
 ### Fixed
+
+- **Clients tab — timeline one-time bars** — one-time services without an end date rendered as open-ended "Ongoing" projected bars spanning the full window; now collapse to their start-day event, drawn solid (matches `serviceIsCommittedInMonth` + forecast chart) with `min-w-2` so day-width bars stay visible; past events drop off the timeline like other ended services.
+- **Clients tab — lapsed commitment chip** — "Committed thru {date}" chip suppressed once no committed span remains in the window (`commitmentSpan > 0` guard); row falls back to "Ongoing", matching the client list's Projected state.
+- **Clients tab — timeline bar caps** — bars clamped at the window start render a square left edge (`startsBeforeWindow`), mirroring the square edge + chevron for bars extending past the window; rounded caps no longer imply a start at the window edge.
 
 - **Mercury Import — duplicate detection** — API rows now dedupe on the stable Mercury transaction id (`hasDuplicateExpense` optional 4th arg, `useExpenseStore`); an exact id match is definitive and fuzzy date+vendor+amount only falls back against id-less rows (manual/CSV). Two distinct same-day/same-amount transactions no longer false-flag each other, while manual↔import overlap is still caught. CSV path unchanged (no UUID).
 - **Mercury Import — category defaulting** — removed blind `outgoingPayment → Contractors & Freelancers` fallback (`useMercuryImport`); unmatched payments stay `Other / Misc Business` for conscious review instead of mislabeling rent/reimbursements/owner's draws as 100%-deductible contract labor (genuine contractor ACH still caught via `send money`/`gusto`/`deel` keywords + Mercury `Payroll` map).

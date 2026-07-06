@@ -26,6 +26,7 @@ const {
   activeClientCount,
   endingSoonServices,
   timelineRows,
+  timelineGroups,
   timelineTodayRatio,
 } = useClients()
 
@@ -729,7 +730,7 @@ async function removeService(service: ClientService) {
               Projected
             </span>
             <span class="flex items-center gap-1.5">
-              <span class="h-3 w-0.5 rounded bg-warning" />
+              <span class="h-3.5 w-1 rounded-full bg-warning" />
               Ending soon
             </span>
           </div>
@@ -739,13 +740,13 @@ async function removeService(service: ClientService) {
       <div v-if="timelineRows.length === 0" class="py-12 text-center text-sm text-muted">
         No active services in the forecast window.
       </div>
-      <div v-else class="overflow-x-auto">
-        <div class="min-w-260 space-y-1.5">
+      <div v-else class="max-h-128 overflow-auto">
+        <div class="min-w-260 space-y-3">
           <div
-            class="grid items-center gap-3 pb-1 text-[11px] font-medium text-muted"
+            class="sticky top-0 z-30 grid items-center gap-3 border-b border-default bg-default pt-0.5 pb-1.5 text-[11px] font-medium text-muted"
             :style="timelineGridStyle"
           >
-            <div>Service</div>
+            <div>Client · Service</div>
             <div class="grid grid-cols-12">
               <div
                 v-for="month in forecastMonths"
@@ -756,89 +757,121 @@ async function removeService(service: ClientService) {
               </div>
             </div>
           </div>
+
           <div
-            v-for="row in timelineRows"
-            :key="row.id"
-            class="grid items-center gap-3 rounded-lg border border-default px-3 py-2.5"
-            :style="timelineGridStyle"
+            v-for="group in timelineGroups"
+            :key="group.clientId"
+            class="overflow-hidden rounded-lg border border-default"
           >
-            <div class="min-w-0 space-y-1">
-              <p class="truncate text-sm font-semibold">{{ row.clientName }}</p>
-              <p class="truncate text-xs text-muted">
-                {{ row.serviceName }} · {{ formatCurrency(row.amount) }} ·
-                {{ CADENCE_LABELS[row.billingCadence] }}
-              </p>
-              <span
-                v-if="row.endLabel"
-                class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
-                :class="row.isEndingSoon ? 'bg-warning/15 text-warning' : 'bg-elevated text-muted'"
-              >
-                <UIcon name="i-lucide-flag" class="size-3" />
-                Ends {{ row.endLabel }}
-              </span>
-              <span
-                v-else-if="row.commitmentEndLabel"
-                class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
-                :class="
-                  row.isEndingSoon ? 'bg-warning/15 text-warning' : 'bg-primary/10 text-primary'
-                "
-              >
-                <UIcon name="i-lucide-lock-keyhole" class="size-3" />
-                Committed thru {{ row.commitmentEndLabel }}
-              </span>
-              <span
-                v-else
-                class="inline-flex items-center gap-1 rounded-full bg-elevated px-2 py-0.5 text-[11px] font-medium text-muted"
-              >
-                <UIcon name="i-lucide-infinity" class="size-3" />
-                Ongoing
-              </span>
+            <div
+              v-if="group.services.length > 1"
+              class="grid items-center gap-3 border-b border-default bg-elevated px-3 py-2"
+              :style="timelineGridStyle"
+            >
+              <div class="flex min-w-0 items-center gap-2">
+                <p class="truncate text-sm font-semibold">{{ group.clientName }}</p>
+                <span class="shrink-0 text-xs text-muted"
+                  >{{ group.services.length }} services</span
+                >
+                <UBadge
+                  v-if="group.endingSoonCount > 0"
+                  :label="`${group.endingSoonCount} ending soon`"
+                  color="warning"
+                  variant="soft"
+                  size="sm"
+                />
+              </div>
+              <div />
             </div>
 
-            <div class="relative h-9">
-              <div class="absolute inset-0 grid grid-cols-12">
+            <div
+              v-for="(row, i) in group.services"
+              :key="row.id"
+              class="grid items-center gap-3 px-3 py-2.5"
+              :class="{ 'border-t border-default/60': i > 0 }"
+              :style="timelineGridStyle"
+            >
+              <div class="min-w-0 space-y-1">
+                <p class="truncate text-sm font-semibold">
+                  {{ group.services.length > 1 ? row.serviceName : row.clientName }}
+                </p>
+                <p class="truncate text-xs text-muted">
+                  <template v-if="group.services.length === 1">{{ row.serviceName }} · </template
+                  >{{ formatCurrency(row.amount) }} · {{ CADENCE_LABELS[row.billingCadence] }}
+                </p>
                 <span
-                  v-for="month in forecastMonths"
-                  :key="month.iso"
-                  class="border-l border-default/60 first:border-l-0"
-                />
+                  v-if="row.endLabel"
+                  class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
+                  :class="
+                    row.isEndingSoon ? 'bg-warning/15 text-warning' : 'bg-elevated text-muted'
+                  "
+                >
+                  <UIcon name="i-lucide-flag" class="size-3" />
+                  Ends {{ row.endLabel }}
+                </span>
+                <span
+                  v-else-if="row.commitmentEndLabel && row.commitmentSpan > 0"
+                  class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary"
+                >
+                  <UIcon name="i-lucide-lock-keyhole" class="size-3" />
+                  Committed thru {{ row.commitmentEndLabel }}
+                </span>
+                <span
+                  v-else
+                  class="inline-flex items-center gap-1 rounded-full bg-elevated px-2 py-0.5 text-[11px] font-medium text-muted"
+                >
+                  <UIcon name="i-lucide-infinity" class="size-3" />
+                  Ongoing
+                </span>
               </div>
 
-              <div
-                class="absolute inset-y-0 z-10 w-px bg-neutral-400/60"
-                :style="{ left: `${timelineTodayRatio * 100}%` }"
-              />
+              <div class="relative h-9">
+                <div class="absolute inset-0 grid grid-cols-12">
+                  <span
+                    v-for="month in forecastMonths"
+                    :key="month.iso"
+                    class="border-l border-default/60 first:border-l-0"
+                  />
+                </div>
 
-              <div
-                class="absolute inset-y-1.5 overflow-hidden rounded-l-md text-primary"
-                :class="row.extendsPastWindow ? 'rounded-r-none' : 'rounded-r-md'"
-                :style="{
-                  left: `${(row.startOffset / 12) * 100}%`,
-                  width: `${(row.span / 12) * 100}%`,
-                }"
-              >
                 <div
-                  class="absolute inset-0 bg-primary/12"
-                  :style="{ backgroundImage: PROJECTED_HATCH }"
+                  class="absolute inset-y-0 z-10 w-px bg-neutral-400/60"
+                  :style="{ left: `${timelineTodayRatio * 100}%` }"
+                />
+
+                <div
+                  class="absolute inset-y-1.5 min-w-2 overflow-hidden text-primary"
+                  :class="[
+                    row.startsBeforeWindow ? 'rounded-l-none' : 'rounded-l-md',
+                    row.extendsPastWindow ? 'rounded-r-none' : 'rounded-r-md',
+                  ]"
+                  :style="{
+                    left: `${(row.startOffset / 12) * 100}%`,
+                    width: `${(row.span / 12) * 100}%`,
+                  }"
+                >
+                  <div
+                    class="absolute inset-0 bg-primary/12"
+                    :style="{ backgroundImage: PROJECTED_HATCH }"
+                  />
+                  <div
+                    v-if="row.commitmentSpan > 0"
+                    class="absolute inset-y-0 left-0 bg-primary"
+                    :style="{ width: `${Math.min(100, (row.commitmentSpan / row.span) * 100)}%` }"
+                  />
+                </div>
+
+                <div
+                  v-if="row.endsWithinWindow && row.isEndingSoon"
+                  class="absolute inset-y-0.5 z-20 w-1 rounded-full bg-warning"
+                  :style="{ left: `calc(${((row.startOffset + row.span) / 12) * 100}% - 2px)` }"
                 />
                 <div
-                  v-if="row.commitmentSpan > 0"
-                  class="absolute inset-y-0 left-0 bg-primary"
-                  :style="{ width: `${Math.min(100, (row.commitmentSpan / row.span) * 100)}%` }"
-                />
-              </div>
-
-              <div
-                v-if="row.endsWithinWindow"
-                class="absolute inset-y-1 z-20 w-0.5 rounded"
-                :class="row.isEndingSoon ? 'bg-warning' : 'bg-primary/70'"
-                :style="{ left: `calc(${((row.startOffset + row.span) / 12) * 100}% - 1px)` }"
-              />
-              <div
-                v-else-if="row.extendsPastWindow"
-                class="absolute inset-y-0 right-0 z-20 flex items-center pr-0.5 text-primary/70"
-              >
-                <UIcon name="i-lucide-chevron-right" class="size-4" />
+                  v-else-if="row.extendsPastWindow"
+                  class="absolute inset-y-0 right-0 z-20 flex items-center pr-0.5 text-primary/70"
+                >
+                  <UIcon name="i-lucide-chevron-right" class="size-4" />
+                </div>
               </div>
             </div>
           </div>
