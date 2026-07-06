@@ -33,17 +33,21 @@ Koin (formerly Koppla) is a Nuxt 4 SPA for tracking business expenses, importing
 - **Hosting:** Cloudflare Pages.
 
 ### Pages & Navigation
-- `pages/index.vue` — main SPA with 5 tabs: Expenses, Mileage, Dashboard, Tax Report, Mercury Import.
-- `pages/settings.vue` — standalone settings page (company name, IRS rate, default payment method, Mercury API token, fiscal year start).
+- `pages/index.vue` — main SPA with 6 tabs: Expenses, Mileage, Clients, Dashboard, Tax Report, Mercury Import.
+- `pages/settings.vue` — standalone settings page (company name, IRS rate, default payment method, Mercury API token, fiscal year start, blob storage usage).
 
 ### Components (one per tab + modals)
-- `ExpensesTab.vue`, `MileageTab.vue`, `DashboardTab.vue`, `TaxReportTab.vue`, `MercuryImportTab.vue`
-- `ExpenseModal.vue`, `ContractorFormModal.vue`, `ConfirmModal.vue`
+- `ExpensesTab.vue`, `MileageTab.vue`, `ClientsTab.vue`, `DashboardTab.vue`, `TaxReportTab.vue`, `MercuryImportTab.vue`
+- `ExpenseModal.vue`, `ClientFormModal.vue`, `ClientServiceFormModal.vue`, `ConfirmModal.vue`
 - `ContractorDirectory.vue`, `RecurringManager.vue`, `EstimatedTaxPayments.vue`
 - `ImportantDatesPanel.vue`, `Prep1099Report.vue`, `AppDatePicker.vue`
+- `AppHeader.vue`, `FloatingBulkActionsBar.vue`, `ExpenseContributionHeatmap.vue`
+- **Shared:** `StatCard.vue` — KPI card (label · accessory · value · footer) used across Dashboard, Mileage, Tax Report, Clients tabs; `ChartLegend.vue` — aligned donut legend (dot · label · amount · %) used by Dashboard's donut charts.
+
+Note: there is no `ContractorFormModal.vue` — contractor add/edit is inline within `ContractorDirectory.vue`.
 
 ### Backup & Restore
-Header buttons allow full JSON backup export and restore. `exportBackup()` writes a versioned JSON file (version: 2) containing all expenses and mileage trips. `restoreBackup(file)` wipes the DB and reloads from the file.
+Header buttons allow full JSON backup export and restore. `exportBackup()` writes a versioned JSON file (currently **version 4**) covering expenses, mileage trips, contractors, recurring templates, estimated tax payments, clients, and client services. `restoreBackup(file)` wipes the DB and reloads from the file; older v2/v3 files (expenses + mileage only, or missing clients data) still restore — absent datasets are detected and skipped.
 
 ---
 
@@ -55,30 +59,33 @@ Header buttons allow full JSON backup export and restore. `exportBackup()` write
 - Configurable in Settings (`irsRatePerMile` setting key).
 
 ### Schedule C Category Mapping (full list)
-All 21 categories with their Schedule C lines and deductible percentages:
+Defined in `app/utils/taxRules.ts` (`TAX_CATEGORIES`) — 23 categories, each with a founder-friendly `name`, official `irsName`, Schedule C line (`null` = off Schedule C), and default deductible %. `isLocked: true` disables the deductible-% input in `ExpenseModal` to enforce an IRS rule. `legacyNames` map older saved expense category strings onto the current name via `findTaxCategoryByName()`.
 
-| Category | Schedule C Line | Deductible % |
-|---|---|---|
-| Software & Subscriptions | Line 18 | 100% |
-| Advertising & Marketing | Line 8 | 100% |
-| Commissions & Platform Fees | Line 10 | 100% |
-| Contractor / Freelancer | Line 11 | 100% |
-| Equipment & Technology | Line 13 | 100% (Section 179 eligible) |
-| Business Insurance | Line 15 | 100% |
-| Business Loan Interest | Line 16b | 100% |
-| Legal & Professional Services | Line 17 | 100% |
-| Office Supplies | Line 18 | 100% |
-| Retirement Contributions | Line 19 | 100% |
-| Rent / Coworking Space | Line 20b | 100% |
-| Repairs & Maintenance | Line 21 | 100% |
-| Business Taxes & Licenses | Line 23 | 100% |
-| Business Travel | Line 24a | 100% |
-| Meals & Entertainment | Line 24b | 50% (locked, IRS rule) |
-| Phone & Internet | Line 25 | 50% |
-| Bank & Transaction Fees | Line 27a | 100% |
-| Education & Training | Line 27a | 100% |
-| Owner's Draw / Personal | None | 0% (non-deductible) |
-| Other | Line 27a | user-defined |
+| Category (app name) | IRS name | Schedule C Line | Default % | Locked |
+|---|---|---|---|---|
+| Software & Subscriptions | Other expenses | Line 27b | 100% | |
+| Contractors & Freelancers | Contract labor | Line 11 | 100% | |
+| Advertising & Marketing | Advertising | Line 8 | 100% | |
+| Meals & Coffee (Business) | Deductible meals | Line 24b | 50% | 🔒 |
+| Travel & Lodging | Travel | Line 24a | 100% | |
+| Equipment & Hardware | Depreciation/§179 | Line 13 | 100% (Section 179 eligible) | |
+| Office Supplies | Office expense | Line 18 | 100% | |
+| Office Rent & Coworking | Rent/lease (other business property) | Line 20b | 100% | |
+| Phone & Internet | Utilities | Line 25 | user-defined | |
+| Home Office Deduction | Business use of home | Line 30 | 100% | |
+| Platform Fees & Commissions | Commissions and fees | Line 10 | 100% | |
+| Bank & Wire Fees | Other expenses | Line 27b | 100% | |
+| Legal, CPA & Professional | Legal and professional services | Line 17 | 100% | |
+| Business Insurance | Insurance (other than health) | Line 15 | 100% | |
+| Business Taxes & Licenses | Taxes and licenses | Line 23 | 100% | |
+| Vehicle & Gas | Car and truck expenses | Line 9 | user-defined | |
+| Education & Courses | Other expenses | Line 27b | 100% | |
+| Client Gifts | Other expenses | Line 27b | 100% ($25/recipient/yr limit) | |
+| Other / Misc Business | Other expenses | Line 27b | user-defined | |
+| Owner's Draw / Personal Transfer | N/A | none | 0% (non-deductible) | 🔒 |
+| Fines & Parking Tickets | N/A | none | 0% (IRC §162(f)) | 🔒 |
+| Owner Retirement (Solo 401k/SEP) | N/A | none (Schedule 1) | 100% | 🔒 |
+| Health Insurance (Self-Employed) | N/A | none (Schedule 1) | 100% | 🔒 |
 
 ### Key Advanced Features
 1. **1099-NEC Tracker:** Tracks payments to contractors. Flags when >$600 is paid (IRS threshold). Contractors can be marked `is1099Exempt`.
@@ -100,7 +107,7 @@ All tables use Drizzle ORM with NuxtHub SQLite. Migrations live in `server/db/mi
 | date | text | ISO date string |
 | vendor | text | |
 | amount | real | Always positive |
-| category | text | Must match CATEGORY_CONFIGS |
+| category | text | Must match a `TAX_CATEGORIES` name (or `legacyNames` alias) |
 | description | text | Default '' |
 | payment_method | text | 'Mercury Debit' \| 'Mercury ACH' \| 'Credit Card' \| 'Cash' |
 | client_billable | boolean | Default false |
@@ -169,6 +176,38 @@ All tables use Drizzle ORM with NuxtHub SQLite. Migrations live in `server/db/mi
 | date_paid | text | Nullable |
 | confirmation_number | text | Default '' |
 
+### `clients`
+| Column | Type | Notes |
+|---|---|---|
+| id | text PK | |
+| name | text | |
+| contact_name | text | Default '' |
+| email | text | Nullable |
+| billing_code | text | Default '', optional Mercury vendor-matching code |
+| status | text | Default 'active' |
+| notes | text | Default '' |
+| created_at | text | |
+| updated_at | text | |
+
+### `client_services`
+| Column | Type | Notes |
+|---|---|---|
+| id | text PK | |
+| client_id | text | References clients.id (no DB-level FK constraint; cascade delete handled manually in `/api/clients/[id]` DELETE) |
+| name | text | |
+| amount | real | |
+| pricing_model | text | Default 'fixed'; 'fixed' \| 'hourly' |
+| hourly_rate | real | Nullable |
+| estimated_monthly_hours | real | Nullable |
+| billing_cadence | text | Default 'monthly'; 'monthly' \| 'quarterly' \| 'annually' \| 'one_time' |
+| start_date | text | ISO date |
+| end_date | text | Nullable |
+| commitment_end_date | text | Nullable |
+| status | text | Default 'active' |
+| notes | text | Default '' |
+| created_at | text | |
+| updated_at | text | |
+
 ---
 
 ## 3.1 KV Storage
@@ -193,9 +232,14 @@ All under `server/api/`:
 | `/api/contractors/[id]` | PUT, DELETE | Update / delete contractor by id |
 | `/api/recurring` | GET, POST | List all / create recurring template |
 | `/api/recurring/[id]` | PUT, DELETE | Update / delete recurring template by id |
-| `/api/estimated-taxes` | GET, POST | List all / create estimated tax payment |
-| `/api/estimated-taxes/[id]` | PUT | Update estimated tax payment by id |
+| `/api/estimated-taxes` | GET, POST | List all / create estimated tax payment; `GET ?year=all` (or omitted) returns all years for export |
+| `/api/estimated-taxes/[id]` | PUT, DELETE | Update / delete estimated tax payment by id |
+| `/api/clients` | GET, POST | List all / create client |
+| `/api/clients/[id]` | PUT, DELETE | Update / delete client by id (delete cascades `client_services`) |
+| `/api/client-services` | GET, POST | List all / create client service |
+| `/api/client-services/[id]` | PUT, DELETE | Update / delete client service by id |
 | `/api/settings` | GET, PUT | GET returns all key-value rows; PUT upserts one key |
+| `/api/settings/storage` | GET | Returns blob storage usage (receipts) for the settings page |
 | `/api/receipts/upload` | POST | Upload receipt file; returns file key |
 | `/api/receipts/[...pathname]` | DELETE | Delete receipt file by pathname |
 | `/api/mercury/transactions` | GET | Server-side proxy to Mercury API; requires `mercury_api_token` in settings |
@@ -252,6 +296,16 @@ Handles both CSV file parsing and live Mercury API fetch. Key logic:
 ### `useConfirm`
 - Promise-based confirmation dialog: `confirm(options): Promise<boolean>`.
 - Used throughout for destructive actions.
+
+### `useClients`
+Revenue tracking for `clients` + `client_services`. Exports:
+- **State:** `clients`, `clientServices`
+- **Client CRUD:** `loadClients()`, `addClient()`, `updateClient()`, `deleteClient()`
+- **Service CRUD:** `addService()`, `updateService()`, `deleteService()`
+- **Helpers:** `servicesForClient(clientId)`, `serviceForecastAmount(service)`, `monthlyRunRate(service)`, `clientRevenueSummary(clientId)` — committed/projected split + `monthlyRunRate` + `next12Total` per client, shared by list rows and KPIs so figures reconcile
+- **Computed:** `forecastMonths`, `monthlyForecast` (12-month committed-vs-projected series), `currentMonthlyRevenue`, `nextSixCommittedRevenue`, `twelveMonthForecastRevenue`, `committedRunway`, `activeClientCount`, `endingSoonServices`
+- **Timeline:** `timelineRows`, `timelineGroups` (Gantt rows clustered per client — multi-service clients get a header row), `timelineTodayRatio`
+- Recurring cadences (quarterly/annually) are amortized to a monthly run rate spread across every active month; one-time fees land as single-month spikes.
 
 ---
 
