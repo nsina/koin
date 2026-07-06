@@ -53,8 +53,8 @@ const moreItems = [
     }"
   >
     <div class="flex max-w-full flex-wrap items-center gap-3 sm:flex-nowrap">
-      <p class="text-sm font-semibold whitespace-nowrap text-default">
-        {{ selectedCount }} selected &#11825; {{ selectedTotal }}
+      <p class="min-w-44 text-sm font-semibold whitespace-nowrap text-default tabular-nums">
+        {{ selectedCount }} selected &middot; {{ selectedTotal }}
       </p>
 
       <USelectMenu
@@ -70,7 +70,7 @@ const moreItems = [
       <div class="flex items-center gap-1 sm:ml-auto">
         <UTooltip text="Mark Billable" :content="{ side: 'top' }">
           <UButton
-            icon="i-lucide-receipt"
+            icon="i-lucide-briefcase"
             color="neutral"
             variant="ghost"
             size="md"
@@ -96,7 +96,7 @@ const moreItems = [
 
         <UDropdownMenu
           :items="moreItems"
-          :filter="{ placeholder: 'Search actions...' }"
+          :modal="false"
           :content="{ align: 'end', sideOffset: 10 }"
         >
           <UTooltip text="More actions" :content="{ side: 'top' }">

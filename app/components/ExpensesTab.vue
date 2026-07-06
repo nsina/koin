@@ -2,7 +2,13 @@
 import { h, resolveComponent } from 'vue'
 import { CalendarDate } from '@internationalized/date'
 import type { DateValue } from '@internationalized/date'
-import type { ColumnDef, HeaderContext, RowSelectionState, SortingState } from '@tanstack/vue-table'
+import type {
+  ColumnDef,
+  HeaderContext,
+  Row,
+  RowSelectionState,
+  SortingState,
+} from '@tanstack/vue-table'
 import type { Expense } from '~/composables/useExpenseStore'
 import { PAYMENT_METHODS } from '~/composables/useExpenseStore'
 import { TAX_CATEGORIES } from '~/utils/taxRules'
@@ -167,6 +173,12 @@ const filteredExpenses = computed(() => {
 
 const filteredTotal = computed(() => filteredExpenses.value.reduce((sum, e) => sum + e.amount, 0))
 
+const filteredDeductible = computed(() =>
+  filteredExpenses.value.reduce((sum, e) => sum + store.getNetDeductible(e), 0),
+)
+
+const hasAnyExpenses = computed(() => store.expenses.value.length > 0)
+
 const selectedExpenses = computed(() =>
   filteredExpenses.value.filter((e) => rowSelection.value[e.id]),
 )
@@ -240,6 +252,7 @@ const UBadge = resolveComponent('UBadge')
 const UIcon = resolveComponent('UIcon')
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
+const UTooltip = resolveComponent('UTooltip')
 
 // ── Category badge colors ─────────────────────────────────────────────────────
 
@@ -336,14 +349,24 @@ const columns: ColumnDef<Expense>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const { taxDeductible, deductiblePct } = row.original
-      const icon =
+      const [name, colorClass, label] =
         !taxDeductible || deductiblePct === 0
-          ? h(UIcon, { name: 'i-lucide-x-circle', class: 'size-4 text-error' })
+          ? ['i-lucide-x-circle', 'text-error', 'Not tax-deductible']
           : deductiblePct < 100
-            ? h(UIcon, { name: 'i-lucide-alert-triangle', class: 'size-4 text-warning' })
-            : h(UIcon, { name: 'i-lucide-check-circle', class: 'size-4 text-success' })
+            ? [
+                'i-lucide-alert-triangle',
+                'text-warning',
+                `Partially deductible (${deductiblePct}%)`,
+              ]
+            : ['i-lucide-check-circle', 'text-success', 'Fully deductible (100%)']
 
-      return h('div', { class: CENTERED_ICON_WRAPPER_CLASS }, [icon])
+      return h('div', { class: CENTERED_ICON_WRAPPER_CLASS }, [
+        h(
+          UTooltip,
+          { text: label },
+          { default: () => h(UIcon, { name, class: `size-4 ${colorClass}` }) },
+        ),
+      ])
     },
     meta: { class: { th: CENTERED_COLUMN_CLASS, td: CENTERED_COLUMN_CLASS } },
   },
@@ -354,10 +377,17 @@ const columns: ColumnDef<Expense>[] = [
     cell: ({ row }) => {
       const billable = row.original.clientBillable
       return h('div', { class: CENTERED_ICON_WRAPPER_CLASS }, [
-        h(UIcon, {
-          name: billable ? 'i-lucide-briefcase' : 'i-lucide-minus',
-          class: billable ? 'size-4 text-info' : 'size-4 text-dimmed',
-        }),
+        h(
+          UTooltip,
+          { text: billable ? 'Billable to client' : 'Not billable' },
+          {
+            default: () =>
+              h(UIcon, {
+                name: billable ? 'i-lucide-briefcase' : 'i-lucide-minus',
+                class: billable ? 'size-4 text-info' : 'size-4 text-dimmed',
+              }),
+          },
+        ),
       ])
     },
     meta: { class: { th: CENTERED_COLUMN_CLASS, td: CENTERED_COLUMN_CLASS } },
@@ -447,7 +477,7 @@ const columns: ColumnDef<Expense>[] = [
               [
                 {
                   label: 'Toggle Billable',
-                  icon: 'i-lucide-receipt',
+                  icon: 'i-lucide-briefcase',
                   onSelect: () =>
                     store.bulkUpdateExpenses([expense.id], {
                       clientBillable: !expense.clientBillable,
@@ -516,6 +546,12 @@ function openEdit(expense: Expense) {
   modalOpen.value = true
 }
 
+// Row click opens the editor. UTable skips clicks that land on a <button>/<a>,
+// so the select checkbox, attachment link, and row actions menu are unaffected.
+function onRowSelect(_e: Event, row: Row<Expense>) {
+  openEdit(row.original)
+}
+
 function handleModalSubmit(draft: Parameters<typeof store.addExpense>[0], id: string | null) {
   if (id) store.updateExpense(id, draft)
   else store.addExpense(draft)
@@ -555,6 +591,14 @@ function clearFilters() {
   filters.paymentMethod = 'all'
   filters.billable = 'all'
   filters.deductible = 'all'
+}
+
+// Clears everything that can hide rows (search, filters, and the date range) —
+// used by the "no matches" empty state.
+function resetView() {
+  searchTerm.value = ''
+  clearFilters()
+  selectPreset('all-time')
 }
 
 function selectPreset(value: string) {
@@ -829,19 +873,50 @@ function setSelectedCategory(name: string) {
         :columns="columns"
         :get-row-id="(row) => row.id"
         :row-selection-options="{ enableMultiRowSelection: true }"
-        empty="No expenses yet. Add your first one above."
+        :on-select="onRowSelect"
         :ui="{
           thead: 'bg-elevated/50 border-b border-default',
           th: 'px-4 py-3 align-middle text-xs font-semibold uppercase tracking-wider text-muted',
           td: 'px-4 py-3 align-middle',
-          tr: 'hover:bg-elevated/50 transition-colors',
+          tr: 'hover:bg-elevated/50 transition-colors cursor-pointer',
         }"
-      />
+      >
+        <template #empty>
+          <div class="flex flex-col items-center gap-3 py-6 text-center">
+            <UIcon
+              :name="hasAnyExpenses ? 'i-lucide-search-x' : 'i-lucide-receipt-text'"
+              class="size-8 text-dimmed"
+            />
+            <p class="text-sm text-muted">
+              {{
+                hasAnyExpenses
+                  ? 'No expenses match your search or filters.'
+                  : 'No expenses yet. Add your first one above.'
+              }}
+            </p>
+            <UButton
+              v-if="hasAnyExpenses"
+              label="Clear filters"
+              color="neutral"
+              variant="subtle"
+              size="sm"
+              @click="resetView"
+            />
+          </div>
+        </template>
+      </UTable>
 
       <template #footer>
         <p class="text-sm font-medium text-muted">
-          {{ filteredExpenses.length }} expenses &middot; Total:
-          <span class="font-semibold text-default">{{ formatCurrency(filteredTotal) }}</span>
+          {{ filteredExpenses.length }} {{ filteredExpenses.length === 1 ? 'expense' : 'expenses' }}
+          &middot; Total:
+          <span class="font-semibold text-default tabular-nums">{{
+            formatCurrency(filteredTotal)
+          }}</span>
+          &middot; Deductible:
+          <span class="font-semibold text-default tabular-nums">{{
+            formatCurrency(filteredDeductible)
+          }}</span>
         </p>
       </template>
     </UCard>

@@ -6,6 +6,13 @@
   --font-mono: 'Geist Mono', monospace;
 }
 
+/* Reserve the scrollbar gutter so overlays that lock body scroll (dropdown menus,
+   modals) can't remove the scrollbar mid-interaction — which would widen the
+   viewport and shift centered `fixed` elements like the bulk-actions bar. */
+html {
+  scrollbar-gutter: stable;
+}
+
 @layer components {
   .table-header-row {
     @apply border-b border-default text-left text-[13px] font-semibold tracking-[0.12em] text-muted uppercase;
@@ -30,8 +37,7 @@
   --vis-tooltip-title-border-bottom: 1px solid var(--ui-border);
   --vis-tooltip-label-color: var(--ui-text-muted);
   --vis-tooltip-value-color: var(--ui-text-highlighted);
-  --vis-tooltip-box-shadow:
-    0 10px 25px -5px rgb(0 0 0 / 0.12), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --vis-tooltip-box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.12), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
 @media print {
