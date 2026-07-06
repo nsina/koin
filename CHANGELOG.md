@@ -47,6 +47,12 @@ Older years: _(none yet)_
 
 ## [Unreleased]
 
+### Fixed
+
+- **Mercury Import — duplicate detection** — API rows now dedupe on the stable Mercury transaction id (`hasDuplicateExpense` optional 4th arg, `useExpenseStore`); an exact id match is definitive and fuzzy date+vendor+amount only falls back against id-less rows (manual/CSV). Two distinct same-day/same-amount transactions no longer false-flag each other, while manual↔import overlap is still caught. CSV path unchanged (no UUID).
+- **Mercury Import — category defaulting** — removed blind `outgoingPayment → Contractors & Freelancers` fallback (`useMercuryImport`); unmatched payments stay `Other / Misc Business` for conscious review instead of mislabeling rent/reimbursements/owner's draws as 100%-deductible contract labor (genuine contractor ACH still caught via `send money`/`gusto`/`deel` keywords + Mercury `Payroll` map).
+- **Mercury Import — sync error copy** — surfaces the server's `statusMessage` (`MercuryImportTab`) so an invalid/expired token reads "Invalid Mercury token" instead of the misleading "not configured" hint (was branching on `statusCode === 401`, shared by both cases).
+
 ## [1.2.0] - 2026-07-04
 
 ### Added

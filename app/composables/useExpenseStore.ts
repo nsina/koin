@@ -160,13 +160,29 @@ export function useExpenseStore() {
     return round2(expense.amount * (expense.deductiblePct / 100))
   }
 
-  function hasDuplicateExpense(date: string, vendor: string, amount: number) {
-    return expenses.value.some(
-      (e) =>
-        e.date === date &&
-        e.vendor.toLowerCase().trim() === vendor.toLowerCase().trim() &&
-        Math.abs(e.amount - amount) < 0.01,
-    )
+  function hasDuplicateExpense(
+    date: string,
+    vendor: string,
+    amount: number,
+    mercuryTransactionId?: string | null,
+  ) {
+    const fuzzyMatch = (e: Expense) =>
+      e.date === date &&
+      e.vendor.toLowerCase().trim() === vendor.toLowerCase().trim() &&
+      Math.abs(e.amount - amount) < 0.01
+
+    // With a Mercury transaction id, an exact id match is definitive. Otherwise
+    // fall back to fuzzy matching only against rows that carry NO id (manual
+    // entries / CSV imports) — two distinct Mercury transactions that merely
+    // share date+vendor+amount must not collide.
+    if (mercuryTransactionId) {
+      return expenses.value.some(
+        (e) =>
+          e.mercuryTransactionId === mercuryTransactionId ||
+          (e.mercuryTransactionId == null && fuzzyMatch(e)),
+      )
+    }
+    return expenses.value.some(fuzzyMatch)
   }
 
   // ── Sanitizers ───────────────────────────────────────────────────────────

@@ -378,14 +378,17 @@ export function useMercuryImport() {
 
       const vendor = inferVendor(rawName)
       // Prefer the user's custom category name, then fall back to Mercury's enum.
-      let category = suggestCategory(vendor, rawName, tx.categoryData?.name || '', mercuryCategory)
-      // Outgoing ACH payments that didn't match any known vendor are likely
-      // contractor payments default to contractor category over generic "other"
-      if (category === 'Other / Misc Business' && tx.kind === 'outgoingPayment') {
-        category = 'Contractors & Freelancers'
-      }
+      // Unmatched payments stay 'Other / Misc Business' for conscious review rather
+      // than being guessed into a category (a blind contractor default mislabels
+      // rent, reimbursements, and owner's draws as 100%-deductible contract labor).
+      const category = suggestCategory(
+        vendor,
+        rawName,
+        tx.categoryData?.name || '',
+        mercuryCategory,
+      )
       const defaults = getTaxDefaultsForCategory(category)
-      const duplicate = hasDuplicateExpense(date, vendor, amount)
+      const duplicate = hasDuplicateExpense(date, vendor, amount, tx.id)
 
       const selected = direction === 'debit' && !isTransfer && !duplicate
       const description = note || tx.externalMemo || rawName

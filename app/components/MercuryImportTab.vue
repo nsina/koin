@@ -42,11 +42,12 @@ async function fetchFromApi() {
       color: 'success',
     })
   } catch (err: unknown) {
-    const e = err as { statusCode?: number; data?: { statusMessage?: string } }
+    const e = err as { data?: { statusMessage?: string } }
+    const serverMsg = e?.data?.statusMessage
     const msg =
-      e?.statusCode === 401
+      serverMsg === 'Mercury API token not configured'
         ? 'Mercury API token not configured. Add it in Settings.'
-        : e?.data?.statusMessage || 'Failed to fetch from Mercury API.'
+        : serverMsg || 'Failed to fetch from Mercury API.'
     toast.add({ title: 'Sync failed', description: msg, color: 'error' })
   } finally {
     syncing.value = false
