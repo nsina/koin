@@ -239,14 +239,7 @@ function print() {
         </UFormField>
 
         <UFormField label="View">
-          <UTabs
-            v-model="viewMode"
-            :items="viewItems"
-            :content="false"
-            color="primary"
-            variant="pill"
-            size="sm"
-          />
+          <UTabs v-model="viewMode" :items="viewItems" :content="false" size="sm" />
         </UFormField>
       </div>
 
@@ -270,24 +263,16 @@ function print() {
 
     <!-- Summary KPIs -->
     <div class="grid gap-4 lg:grid-cols-3">
-      <UCard>
-        <p class="text-sm text-muted">Total Deductible Expenses</p>
-        <p class="mt-2 text-4xl font-bold tracking-tight tabular-nums">
-          {{ formatCurrency(expenseTotal) }}
-        </p>
-      </UCard>
-      <UCard>
-        <p class="text-sm text-muted">Mileage Deduction (Line 9)</p>
-        <p class="mt-2 text-4xl font-bold tracking-tight tabular-nums">
-          {{ formatCurrency(mileageDeductionInRange) }}
-        </p>
-      </UCard>
-      <UCard>
-        <p class="text-sm text-muted">Grand Total Deduction</p>
-        <p class="mt-2 text-4xl font-bold tracking-tight text-success tabular-nums">
-          {{ formatCurrency(grandTotal) }}
-        </p>
-      </UCard>
+      <StatCard label="Total Deductible Expenses" :value="formatCurrency(expenseTotal)" />
+      <StatCard
+        label="Mileage Deduction (Line 9)"
+        :value="formatCurrency(mileageDeductionInRange)"
+      />
+      <StatCard
+        label="Grand Total Deduction"
+        :value="formatCurrency(grandTotal)"
+        value-class="text-success"
+      />
     </div>
 
     <!-- App Categories view -->

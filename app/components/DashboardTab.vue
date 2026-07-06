@@ -212,9 +212,8 @@ const currentYear = computed(() => now.value?.getFullYear() ?? '')
     <!-- KPI cards -->
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <!-- This Month -->
-      <UCard>
-        <div class="flex items-start justify-between gap-2">
-          <p class="text-sm text-muted">This Month</p>
+      <StatCard label="This Month" :value="formatCurrency(store.monthSpend.value)">
+        <template #action>
           <UBadge
             v-if="monthChangePct !== null"
             :color="monthChangePct <= 0 ? 'success' : 'neutral'"
@@ -224,12 +223,9 @@ const currentYear = computed(() => now.value?.getFullYear() ?? '')
           >
             {{ monthChangePct > 0 ? '+' : '' }}{{ monthChangePct }}%
           </UBadge>
-        </div>
-        <p class="mt-2 text-4xl font-bold tracking-tight tabular-nums">
-          {{ formatCurrency(store.monthSpend.value) }}
-        </p>
-        <div class="mt-4">
-          <p class="flex items-center gap-1.5 text-sm font-semibold">
+        </template>
+        <template #meta>
+          <p class="flex items-center gap-1.5 text-sm font-semibold text-highlighted">
             <UIcon
               :name="(monthChangePct ?? 0) <= 0 ? 'i-lucide-trending-down' : 'i-lucide-trending-up'"
               class="size-4 shrink-0"
@@ -241,70 +237,58 @@ const currentYear = computed(() => now.value?.getFullYear() ?? '')
             <template v-else>No prior month data</template>
           </p>
           <p class="mt-0.5 text-xs text-muted">Total spend in {{ currentMonthName }}</p>
-        </div>
-      </UCard>
+        </template>
+      </StatCard>
 
       <!-- YTD Spend -->
-      <UCard>
-        <div class="flex items-start justify-between gap-2">
-          <p class="text-sm text-muted">YTD Spend</p>
+      <StatCard label="YTD Spend" :value="formatCurrency(store.ytdSpend.value)">
+        <template #action>
           <UBadge v-if="avgMonthlySpend > 0" color="neutral" variant="subtle" size="lg">
             {{ compactCurrency(avgMonthlySpend) }}/mo avg
           </UBadge>
-        </div>
-        <p class="mt-2 text-4xl font-bold tracking-tight tabular-nums">
-          {{ formatCurrency(store.ytdSpend.value) }}
-        </p>
-        <div class="mt-4">
-          <p class="flex items-center gap-1.5 text-sm font-semibold">
+        </template>
+        <template #meta>
+          <p class="flex items-center gap-1.5 text-sm font-semibold text-highlighted">
             <UIcon name="i-lucide-calendar" class="size-4 shrink-0" />
             {{ monthsElapsed }} month{{ monthsElapsed !== 1 ? 's' : '' }} tracked
           </p>
           <p class="mt-0.5 text-xs text-muted">Year-to-date total spend</p>
-        </div>
-      </UCard>
+        </template>
+      </StatCard>
 
       <!-- Tax Deductible -->
-      <UCard>
-        <div class="flex items-start justify-between gap-2">
-          <p class="text-sm text-muted">Tax Deductible YTD</p>
+      <StatCard label="Tax Deductible YTD" :value="formatCurrency(store.ytdTaxDeductible.value)">
+        <template #action>
           <UBadge v-if="deductiblePct > 0" color="success" variant="subtle" size="lg">
             {{ deductiblePct }}% deductible
           </UBadge>
-        </div>
-        <p class="mt-2 text-4xl font-bold tracking-tight tabular-nums">
-          {{ formatCurrency(store.ytdTaxDeductible.value) }}
-        </p>
-        <div class="mt-4">
-          <p class="flex items-center gap-1.5 text-sm font-semibold">
+        </template>
+        <template #meta>
+          <p class="flex items-center gap-1.5 text-sm font-semibold text-highlighted">
             <UIcon name="i-lucide-receipt" class="size-4 shrink-0" />
             {{
               deductiblePct > 0 ? `${deductiblePct}% of spend qualifies` : 'No deductible expenses'
             }}
           </p>
           <p class="mt-0.5 text-xs text-muted">Net deductible this year</p>
-        </div>
-      </UCard>
+        </template>
+      </StatCard>
 
       <!-- Billable -->
-      <UCard>
-        <div class="flex items-start justify-between gap-2">
-          <p class="text-sm text-muted">Billable YTD</p>
+      <StatCard label="Billable YTD" :value="formatCurrency(store.ytdBillable.value)">
+        <template #action>
           <UBadge v-if="billablePct > 0" color="warning" variant="subtle" size="lg">
             {{ billablePct }}% of spend
           </UBadge>
-        </div>
-        <p class="mt-2 text-4xl font-bold tracking-tight tabular-nums">
-          {{ formatCurrency(store.ytdBillable.value) }}
-        </p>
-        <div class="mt-4">
-          <p class="flex items-center gap-1.5 text-sm font-semibold">
+        </template>
+        <template #meta>
+          <p class="flex items-center gap-1.5 text-sm font-semibold text-highlighted">
             <UIcon name="i-lucide-file-check-2" class="size-4 shrink-0" />
             {{ billablePct > 0 ? `${billablePct}% of total spend` : 'No billable expenses' }}
           </p>
           <p class="mt-0.5 text-xs text-muted">Flagged for client billing</p>
-        </div>
-      </UCard>
+        </template>
+      </StatCard>
     </div>
 
     <ExpenseContributionHeatmap />

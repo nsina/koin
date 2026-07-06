@@ -47,7 +47,12 @@ Older years: _(none yet)_
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-07-06
+
 ### Changed
+
+- **StatCard — KPI card consolidation** — 14 near-duplicate KPI cards across Dashboard, Mileage, Tax Report, and Clients tabs collapsed into one `StatCard.vue` (label · top-right accessory · value · footer). Top-right generalized to an `#action` slot (icon default via `icon` prop, badge override); `valueClass` prop for the lone success-colored Tax total; `#meta` slot for footers. Card chrome/padding untouched — `:ui` body override merges with the theme (tailwind-merge) rather than replacing `p-4 sm:p-6`.
+- **Tax Report — UTabs redundant props** — dropped `color="primary"` + `variant="pill"` (both Nuxt UI defaults); rendering unchanged.
 
 - **Clients tab — timeline grouping** — Gantt rows clustered per client (`timelineGroups`, `useClients.ts`): multi-service clients get a header row (name · service count · ending-soon badge), single-service clients stay client-name-first; groups alphabetical to match the client list. Scroll capped (`max-h-128`) with sticky month-axis header (`Client · Service` + 12 columns).
 

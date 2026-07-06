@@ -45,24 +45,12 @@ async function deleteTrip(trip: Parameters<typeof store.deleteMileageTrip>[0]) {
   <div class="space-y-5">
     <!-- Summary -->
     <div class="grid gap-4 lg:grid-cols-3">
-      <UCard>
-        <p class="text-sm text-muted">Total Miles (YTD)</p>
-        <p class="mt-2 text-4xl font-bold tracking-tight tabular-nums">
-          {{ formatNumber(store.totalMilesYtd.value) }}
-        </p>
-      </UCard>
-      <UCard>
-        <p class="text-sm text-muted">IRS Rate (2026)</p>
-        <p class="mt-2 text-4xl font-bold tracking-tight tabular-nums">
-          {{ formatRate(irsRatePerMile) }}/mi
-        </p>
-      </UCard>
-      <UCard>
-        <p class="text-sm text-muted">Total Deduction (YTD)</p>
-        <p class="mt-2 text-4xl font-bold tracking-tight tabular-nums">
-          {{ formatCurrency(store.mileageDeductionYtd.value) }}
-        </p>
-      </UCard>
+      <StatCard label="Total Miles (YTD)" :value="formatNumber(store.totalMilesYtd.value)" />
+      <StatCard label="IRS Rate (2026)" :value="`${formatRate(irsRatePerMile)}/mi`" />
+      <StatCard
+        label="Total Deduction (YTD)"
+        :value="formatCurrency(store.mileageDeductionYtd.value)"
+      />
     </div>
 
     <!-- Log trip form -->

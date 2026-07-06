@@ -17,6 +17,7 @@ const {
   servicesForClient,
   clientRevenueSummary,
   serviceForecastAmount,
+  monthlyRunRate,
   forecastMonths,
   monthlyForecast,
   currentMonthlyRevenue,
@@ -118,6 +119,23 @@ function committedShare(summary: ClientRevenueSummary) {
   if (summary.monthlyRunRate <= 0) return 0
   return Math.round((summary.committedMonthly / summary.monthlyRunRate) * 100)
 }
+
+// KPI footers: contracted coverage of the near-term forecast, the 12-month
+// committed/projected split, and the recurring revenue lost if every
+// ending-soon service lapses.
+const sixMonthCommittedShare = computed(() => {
+  const total = monthlyForecast.value.slice(0, 6).reduce((sum, m) => sum + m.total, 0)
+  return total > 0 ? Math.round((nextSixCommittedRevenue.value / total) * 100) : 0
+})
+const twelveMonthCommitted = computed(() =>
+  round2(monthlyForecast.value.reduce((sum, m) => sum + m.committed, 0)),
+)
+const twelveMonthProjected = computed(() =>
+  round2(twelveMonthForecastRevenue.value - twelveMonthCommitted.value),
+)
+const endingSoonMonthlyRevenue = computed(() =>
+  round2(endingSoonServices.value.reduce((sum, e) => sum + monthlyRunRate(e.service), 0)),
+)
 
 const timelineGridStyle = computed(() => ({
   gridTemplateColumns: 'minmax(15rem, 18rem) minmax(46rem, 1fr)',
@@ -267,49 +285,47 @@ async function removeService(service: ClientService) {
     </div>
 
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <UCard>
-        <p class="text-sm text-muted">Current Monthly Revenue</p>
-        <p class="mt-2 text-4xl font-bold tracking-tight tabular-nums">
-          {{ formatCurrency(currentMonthlyRevenue) }}
-        </p>
-        <p class="mt-4 flex items-center gap-1.5 text-sm font-semibold">
-          <UIcon name="i-lucide-users" class="size-4 shrink-0" />
+      <StatCard
+        label="Current Monthly Revenue"
+        :value="formatCurrency(currentMonthlyRevenue)"
+        icon="i-lucide-users"
+      >
+        <template #meta>
           {{ activeClientCount }} active client{{ activeClientCount !== 1 ? 's' : '' }}
-        </p>
-      </UCard>
+        </template>
+      </StatCard>
 
-      <UCard>
-        <p class="text-sm text-muted">Committed Next 6 Months</p>
-        <p class="mt-2 text-4xl font-bold tracking-tight tabular-nums">
-          {{ formatCurrency(nextSixCommittedRevenue) }}
-        </p>
-        <p class="mt-4 flex items-center gap-1.5 text-sm font-semibold">
-          <UIcon name="i-lucide-lock-keyhole" class="size-4 shrink-0" />
-          Contracted or dated work
-        </p>
-      </UCard>
+      <StatCard
+        label="Committed Next 6 Months"
+        :value="formatCurrency(nextSixCommittedRevenue)"
+        icon="i-lucide-lock-keyhole"
+      >
+        <template #meta>{{ sixMonthCommittedShare }}% of 6-month forecast</template>
+      </StatCard>
 
-      <UCard>
-        <p class="text-sm text-muted">12-Month Forecast</p>
-        <p class="mt-2 text-4xl font-bold tracking-tight tabular-nums">
-          {{ formatCurrency(twelveMonthForecastRevenue) }}
-        </p>
-        <p class="mt-4 flex items-center gap-1.5 text-sm font-semibold">
-          <UIcon name="i-lucide-chart-no-axes-combined" class="size-4 shrink-0" />
-          Committed plus projected
-        </p>
-      </UCard>
+      <StatCard
+        label="12-Month Forecast"
+        :value="formatCurrency(twelveMonthForecastRevenue)"
+        icon="i-lucide-chart-no-axes-combined"
+      >
+        <template #meta>
+          {{ compactCurrency(twelveMonthCommitted) }} committed ·
+          {{ compactCurrency(twelveMonthProjected) }} projected
+        </template>
+      </StatCard>
 
-      <UCard>
-        <p class="text-sm text-muted">Ending Soon</p>
-        <p class="mt-2 text-4xl font-bold tracking-tight tabular-nums">
-          {{ endingSoonServices.length }}
-        </p>
-        <p class="mt-4 flex items-center gap-1.5 text-sm font-semibold">
-          <UIcon name="i-lucide-calendar-clock" class="size-4 shrink-0" />
-          Next 3 months
-        </p>
-      </UCard>
+      <StatCard
+        label="Ending Soon"
+        :value="endingSoonServices.length"
+        icon="i-lucide-calendar-clock"
+      >
+        <template #meta>
+          <template v-if="endingSoonMonthlyRevenue > 0">
+            {{ compactCurrency(endingSoonMonthlyRevenue) }}/mo · next 3 months
+          </template>
+          <template v-else>Next 3 months</template>
+        </template>
+      </StatCard>
     </div>
 
     <div class="grid items-start gap-4 xl:grid-cols-5">
